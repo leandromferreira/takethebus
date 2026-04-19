@@ -1,0 +1,6 @@
+version=1
+id=
+title=Bus Stop Fast Travel [B42]
+description=STEAM_DESC.txt
+tags=Build 42;Multiplayer;Interface;Map;Server;
+visibility=public

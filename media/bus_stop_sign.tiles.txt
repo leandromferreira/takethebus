@@ -1,0 +1,23 @@
+version = 1
+tileset
+{
+    file = bus_stop_tileset
+    size = 2,1
+    id = 1
+    // bus_stop_tileset_0
+    tile
+    {
+        xy = 0,0
+        BlocksPlacement = 
+        CustomName = bus_sign
+        DamagedSprite = 1
+        GroupName = street
+        HitByCar = 
+        MinimumCarSpeedDmg = 90
+        PhysicsShape = Solid
+        ScrapUseSkill = 
+        ScrapUseTool = 
+        StopCar = 
+        TieSheetRope = 
+    }
+}

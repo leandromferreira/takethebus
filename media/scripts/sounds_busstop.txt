@@ -1,0 +1,25 @@
+module Base {
+
+    sound BusStop_Arrive {
+        category = Item,
+        loop = false,
+        is3D = false,
+        volume = 0.2,
+        clip
+        {
+            file = media/sound/bus_arrive.ogg,
+        }
+    }
+
+    sound BusStop_Depart {
+        category = Item,
+        loop = false,
+        is3D = false,
+        volume = 0.2,
+        clip
+        {
+            file = media/sound/bus_depart.ogg,
+        }
+    }
+
+}

@@ -1,0 +1,8 @@
+name=Bus Stop Fast Travel
+id=BusStopFastTravel
+description=Adds admin-placed bus stops that allow controlled fast travel between destinations in multiplayer servers.
+url=
+modversion=1.0
+pzversion=42
+pack=bus_stop_sign
+tiledef=bus_stop_sign 12000

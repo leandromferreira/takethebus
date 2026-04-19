@@ -1,0 +1,9 @@
+{
+    "Sandbox_BusStop":                           "Bus Stop Fast Travel",
+    "Sandbox_BusStop_CurrencyItem":              "Currency Item",
+    "Sandbox_BusStop_CurrencyItem_tooltip":      "Item type used as bus fare currency (e.g. Base.Money).",
+    "Sandbox_BusStop_BasePrice":                 "Base Price",
+    "Sandbox_BusStop_BasePrice_tooltip":         "Base cost in currency items for any trip, regardless of distance.",
+    "Sandbox_BusStop_PricePerTile":              "Price Per Tile (x0.001)",
+    "Sandbox_BusStop_PricePerTile_tooltip":      "Extra cost per tile of distance for dynamic pricing. Value is multiplied by 0.001 — default 1 means 0.001 per tile."
+}

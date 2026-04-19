@@ -1,0 +1,122 @@
+[h1][B42] Bus Stop Fast Travel[/h1]
+
+Adds admin-placed bus stops to any server. Players walk up to a stop, pick a destination, pay the fare, and are teleported with a cinematic fade transition. Fully server-authoritative — admins control every stop, price, and route.
+
+[hr][/hr]
+
+[h2]How It Works[/h2]
+
+[h3]For Players[/h3]
+[list]
+[*]Walk within range of a bus stop
+[*]Right-click → [b]Use bus stop: [name][/b]
+[*]The travel panel opens showing all available destinations and their fares
+[*]Click a destination — the screen fades to black, you are teleported, and the screen fades back in
+[*]If the origin stop has [b]Return Trip[/b] enabled, a return button appears at the top of the panel on your next visit
+[/list]
+
+[h3]For Admins[/h3]
+[list]
+[*]Right-click any tile → [b]Build bus stop here[/b] → enter a name
+[*]Right-click near an existing stop → [b]Remove bus stop[/b]
+[*]Right-click anywhere → [b]Manage bus stops[/b] to open the full admin panel
+[/list]
+
+[hr][/hr]
+
+[h2]Features[/h2]
+
+[b]Travel System[/b]
+[list]
+[*]Teleportation with full-screen fade to black and fade back
+[*]Bus arrival and departure sound effects during the transition
+[*]Arrival protection — zombies won't attack you for a few seconds after landing
+[*]Countdown HUD showing remaining protection time
+[*]Per-player sound volume preference: Off / Low / Medium / High, cycled from the travel panel
+[/list]
+
+[b]Stop Configuration[/b]
+[list]
+[*][b]Free[/b] — no cost to travel
+[*][b]Fixed[/b] — flat fare multiplied by the stop's price multiplier
+[*][b]Dynamic[/b] — fare calculated by distance, scaled by base price, price-per-tile, and multiplier
+[*][b]Available toggle[/b] — disable a stop without deleting it; hidden from players and unavailable as a destination
+[*][b]Return Trip[/b] — when enabled, traveling to this stop remembers your origin so you can return in one click without cost
+[/list]
+
+[b]Admin Panel[/b]
+[list]
+[*]Lists all stops with their coordinates, price type, multiplier, and status
+[*]Edit any field inline and save
+[*][b]Go To[/b] — teleports the admin directly to a stop
+[*][b]Delete Stop[/b] — removes the stop from the registry immediately
+[/list]
+
+[b]Map Markers[/b]
+[list]
+[*]Every active stop appears as an icon on the in-game map
+[*]Click a marker to see the stop name
+[/list]
+
+[hr][/hr]
+
+[h2]Stop Options Reference[/h2]
+
+[table]
+[tr][th]Field[/th][th]Description[/th][/tr]
+[tr][td]Display Name[/td][td]The name shown in menus and on the map[/td][/tr]
+[tr][td]Price Type[/td][td]Free · Fixed · Dynamic[/td][/tr]
+[tr][td]Price Multiplier[/td][td]Scales the calculated fare for this stop (e.g. 2.0 = double price)[/td][/tr]
+[tr][td]Available[/td][td]Yes/No — disabled stops are invisible to players[/td][/tr]
+[tr][td]Return Trip[/td][td]Yes/No — enables the one-click return button after arrival[/td][/tr]
+[/table]
+
+[hr][/hr]
+
+[h2]Sandbox Options[/h2]
+
+Found under [b]Sandbox → Bus Stop Fast Travel[/b]:
+
+[table]
+[tr][th]Option[/th][th]Default[/th][th]Description[/th][/tr]
+[tr][td]Currency Item[/td][td]Base.Money[/td][td]The item players pay with — any valid item type string[/td][/tr]
+[tr][td]Base Price[/td][td]1[/td][td]Minimum fare applied to every trip[/td][/tr]
+[tr][td]Price Per Tile[/td][td]1[/td][td]Extra cost per tile of distance (÷1000) used in Dynamic pricing[/td][/tr]
+[/table]
+
+[b]Dynamic Price Formula:[/b] [i]ceil( (BasePrice + distance × (PricePerTile ÷ 1000)) × stop_multiplier )[/i]
+
+[hr][/hr]
+
+[h2]Short FAQ[/h2]
+
+[b]Game version:[/b] B42 (Unstable or later)
+[b]Multiplayer:[/b] Yes — fully server-authoritative
+[b]Singleplayer:[/b] Yes
+[b]Added mid-game:[/b] Yes — existing saves are not affected
+[b]Who can manage stops:[/b] Admin and Moderator access levels only
+[b]Where is data saved:[/b] [i]~/Zomboid/Lua/BusStopData.lua[/i] on the server
+
+[hr][/hr]
+
+[h2]Technical Information[/h2]
+
+[table]
+[tr][td]Mod ID[/td][td]BusStopFastTravel[/td][/tr]
+[tr][td]Version[/td][td]1.0[/td][/tr]
+[tr][td]Build[/td][td]42+[/td][/tr]
+[/table]
+
+[hr][/hr]
+
+[h2]Permissions for Modders[/h2]
+
+[b]Ask for permission.[/b]
+
+This mod may [b]not[/b] be included in modpacks, collections distributed as a single download, or any form of redistribution without the express permission of the original creator. Extensions and patches are also subject to this restriction. Having received permission, credit must be given to the original creator both within the mod files and wherever the mod is published online.
+
+[hr][/hr]
+
+[h2]Tested On[/h2]
+
+Dedicated server (Linux) · Build 42+

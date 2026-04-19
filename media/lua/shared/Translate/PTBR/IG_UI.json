@@ -1,0 +1,61 @@
+{
+    "IGUI_BusStop_ctx_use_stop":        "Usar parada: %1",
+    "IGUI_BusStop_ctx_build_stop":      "Construir parada aqui",
+    "IGUI_BusStop_ctx_remove_stop":     "Remover parada",
+    "IGUI_BusStop_ctx_manage_stops":    "Gerenciar paradas",
+
+    "IGUI_BusStop_ui_title":            "Parada: %1",
+    "IGUI_BusStop_ui_no_destinations":  "Nenhum destino disponível.",
+    "IGUI_BusStop_ui_close":            "Fechar",
+    "IGUI_BusStop_ui_free_label":       "Grátis",
+    "IGUI_BusStop_ui_return_to":        "← Retornar para %1",
+
+    "IGUI_BusStop_adm_title":           "Gerenciador de Paradas",
+    "IGUI_BusStop_adm_displayname":     "Nome:",
+    "IGUI_BusStop_adm_coord_x":         "X:",
+    "IGUI_BusStop_adm_coord_y":         "Y:",
+    "IGUI_BusStop_adm_coord_z":         "Z:",
+    "IGUI_BusStop_adm_coords":          "Coords:",
+    "IGUI_BusStop_adm_pricetype":       "Tipo de Preço:",
+    "IGUI_BusStop_adm_multiplier":      "Multiplicador:",
+    "IGUI_BusStop_adm_available":       "Disponível:",
+    "IGUI_BusStop_adm_remember_return": "Viagem de Retorno:",
+    "IGUI_BusStop_adm_price_free":      "Grátis",
+    "IGUI_BusStop_adm_price_fixed":     "Fixo",
+    "IGUI_BusStop_adm_price_dynamic":   "Dinâmico",
+    "IGUI_BusStop_adm_yes":             "Sim",
+    "IGUI_BusStop_adm_no":              "Não",
+    "IGUI_BusStop_adm_save":            "Salvar",
+    "IGUI_BusStop_adm_delete":          "Excluir",
+    "IGUI_BusStop_adm_goto":            "Ir",
+    "IGUI_BusStop_adm_close":           "Fechar",
+
+    "IGUI_BusStop_dlg_name_prompt":     "Digite um nome para esta parada:",
+    "IGUI_BusStop_dlg_name_default":    "Parada de Ônibus",
+
+    "IGUI_BusStop_msg_arrived":         "Chegou em %1.",
+    "IGUI_BusStop_msg_stop_created":    "Parada '%1' criada.",
+    "IGUI_BusStop_msg_stop_removed":    "Parada removida.",
+    "IGUI_BusStop_msg_stop_updated":    "Parada atualizada.",
+
+    "IGUI_BusStop_err_in_vehicle":      "Saia do veículo antes de usar a parada.",
+    "IGUI_BusStop_err_zombies_nearby":  "Há zumbis por perto! Lide com eles primeiro.",
+    "IGUI_BusStop_err_invalid_location":"Localização da parada inválida.",
+    "IGUI_BusStop_err_stop_not_found":  "Parada não encontrada no mundo.",
+    "IGUI_BusStop_err_too_far":         "Você está longe demais da parada.",
+    "IGUI_BusStop_err_unavailable":     "Este destino está indisponível no momento.",
+    "IGUI_BusStop_err_already_here":    "Você já está nesta parada.",
+    "IGUI_BusStop_err_unknown_dest":    "Destino desconhecido.",
+    "IGUI_BusStop_err_no_currency":     "%1 insuficiente. Necessário: %2, você tem: %3.",
+    "IGUI_BusStop_err_permission":      "Permissão negada.",
+    "IGUI_BusStop_err_invalid_tile":    "Tile inválido.",
+    "IGUI_BusStop_err_not_in_registry": "Parada não encontrada no registro.",
+
+    "IGUI_BusStop_map_stop_label":      "%1",
+
+    "IGUI_BusStop_sound_label":         "Som:",
+
+    "IGUI_BusStop_prot_start":          "Proteção de chegada ativa.",
+    "IGUI_BusStop_prot_end":            "Proteção de chegada expirou.",
+    "IGUI_BusStop_prot_countdown":      "Protegido: %1s"
+}

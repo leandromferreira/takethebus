@@ -1,0 +1,61 @@
+{
+    "IGUI_BusStop_ctx_use_stop":        "Use bus stop: %1",
+    "IGUI_BusStop_ctx_build_stop":      "Build bus stop here",
+    "IGUI_BusStop_ctx_remove_stop":     "Remove bus stop",
+    "IGUI_BusStop_ctx_manage_stops":    "Manage bus stops",
+
+    "IGUI_BusStop_ui_title":            "Bus Stop: %1",
+    "IGUI_BusStop_ui_no_destinations":  "No destinations available.",
+    "IGUI_BusStop_ui_close":            "Close",
+    "IGUI_BusStop_ui_free_label":       "Free",
+    "IGUI_BusStop_ui_return_to":        "← Return to %1",
+
+    "IGUI_BusStop_adm_title":           "Bus Stop Manager",
+    "IGUI_BusStop_adm_displayname":     "Display Name:",
+    "IGUI_BusStop_adm_coord_x":         "X:",
+    "IGUI_BusStop_adm_coord_y":         "Y:",
+    "IGUI_BusStop_adm_coord_z":         "Z:",
+    "IGUI_BusStop_adm_coords":          "Coords:",
+    "IGUI_BusStop_adm_pricetype":       "Price Type:",
+    "IGUI_BusStop_adm_multiplier":      "Price Mult.:",
+    "IGUI_BusStop_adm_available":       "Available:",
+    "IGUI_BusStop_adm_remember_return": "Return Trip:",
+    "IGUI_BusStop_adm_price_free":      "Free",
+    "IGUI_BusStop_adm_price_fixed":     "Fixed",
+    "IGUI_BusStop_adm_price_dynamic":   "Dynamic",
+    "IGUI_BusStop_adm_yes":             "Yes",
+    "IGUI_BusStop_adm_no":              "No",
+    "IGUI_BusStop_adm_save":            "Save Changes",
+    "IGUI_BusStop_adm_delete":          "Delete Stop",
+    "IGUI_BusStop_adm_goto":            "Go To",
+    "IGUI_BusStop_adm_close":           "Close",
+
+    "IGUI_BusStop_dlg_name_prompt":     "Enter a name for this bus stop:",
+    "IGUI_BusStop_dlg_name_default":    "Bus Stop",
+
+    "IGUI_BusStop_msg_arrived":         "Arrived at %1.",
+    "IGUI_BusStop_msg_stop_created":    "Bus stop '%1' created.",
+    "IGUI_BusStop_msg_stop_removed":    "Bus stop removed.",
+    "IGUI_BusStop_msg_stop_updated":    "Stop updated.",
+
+    "IGUI_BusStop_err_in_vehicle":      "Exit the vehicle before using a bus stop.",
+    "IGUI_BusStop_err_zombies_nearby":  "There are zombies nearby! Deal with them first.",
+    "IGUI_BusStop_err_invalid_location":"Invalid stop location.",
+    "IGUI_BusStop_err_stop_not_found":  "Bus stop not found in the world.",
+    "IGUI_BusStop_err_too_far":         "You are too far from the bus stop.",
+    "IGUI_BusStop_err_unavailable":     "This destination is currently unavailable.",
+    "IGUI_BusStop_err_already_here":    "You are already at this stop.",
+    "IGUI_BusStop_err_unknown_dest":    "Unknown destination.",
+    "IGUI_BusStop_err_no_currency":     "Not enough %1. Need %2, have %3.",
+    "IGUI_BusStop_err_permission":      "Permission denied.",
+    "IGUI_BusStop_err_invalid_tile":    "Invalid tile.",
+    "IGUI_BusStop_err_not_in_registry": "Stop not found in registry.",
+
+    "IGUI_BusStop_map_stop_label":      "%1",
+
+    "IGUI_BusStop_sound_label":         "Sound:",
+
+    "IGUI_BusStop_prot_start":          "Arrival protection active.",
+    "IGUI_BusStop_prot_end":            "Arrival protection expired.",
+    "IGUI_BusStop_prot_countdown":      "Protected: %1s"
+}

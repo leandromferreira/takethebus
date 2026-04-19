@@ -1,0 +1,9 @@
+{
+    "Sandbox_BusStop":                           "Viagem Rápida de Ônibus",
+    "Sandbox_BusStop_CurrencyItem":              "Item de Moeda",
+    "Sandbox_BusStop_CurrencyItem_tooltip":      "Tipo de item usado como moeda para as passagens (ex: Base.Money).",
+    "Sandbox_BusStop_BasePrice":                 "Preço Base",
+    "Sandbox_BusStop_BasePrice_tooltip":         "Custo base em itens de moeda para qualquer viagem, independente da distância.",
+    "Sandbox_BusStop_PricePerTile":              "Preço por Tile (x0.001)",
+    "Sandbox_BusStop_PricePerTile_tooltip":      "Custo extra por tile de distância no modo dinâmico. O valor é multiplicado por 0.001 — padrão 1 = 0.001 por tile."
+}

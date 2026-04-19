@@ -1,0 +1,32 @@
+VERSION = 1,
+
+option BusStop.CurrencyItem
+{
+    type = string,
+    default = Base.Money,
+    page = BusStop,
+    translation = BusStop_CurrencyItem,
+    tooltip = BusStop_CurrencyItem_tooltip,
+}
+
+option BusStop.BasePrice
+{
+    type = integer,
+    default = 1,
+    min = 0,
+    max = 999,
+    page = BusStop,
+    translation = BusStop_BasePrice,
+    tooltip = BusStop_BasePrice_tooltip,
+}
+
+option BusStop.PricePerTile
+{
+    type = integer,
+    default = 1,
+    min = 0,
+    max = 1000,
+    page = BusStop,
+    translation = BusStop_PricePerTile,
+    tooltip = BusStop_PricePerTile_tooltip,
+}
