@@ -10,9 +10,11 @@ Adds admin-placed bus stops to any server. Players walk up to a stop, pick a des
 [list]
 [*]Walk within range of a bus stop
 [*]Right-click → [b]Use bus stop: [name][/b]
-[*]The travel panel opens showing all available destinations and their fares
-[*]Click a destination — the screen fades to black, you are teleported, and the screen fades back in
-[*]If the origin stop has [b]Return Trip[/b] enabled, a return button appears at the top of the panel on your next visit
+[*]The travel panel opens — search or scroll through available destinations
+[*]Click a stop to select it and preview the fare, then click [b]Travel to [name][/b] to confirm
+[*]The screen fades to black, you are teleported, and the screen fades back in
+[*]If the destination has [b]Return Trip[/b] enabled, a return button appears on your next visit
+[*]A [b]Random Trip[/b] button sends you to a surprise destination (if enabled by the server)
 [/list]
 
 [h3]For Admins[/h3]
@@ -25,6 +27,14 @@ Adds admin-placed bus stops to any server. Players walk up to a stop, pick a des
 [hr][/hr]
 
 [h2]Features[/h2]
+
+[b]Travel Panel[/b]
+[list]
+[*]Search bar to filter destinations by name
+[*]Scrollable list — works with any number of stops without clipping the screen
+[*]Select-then-confirm flow — click a stop to preview name and fare, then confirm travel; no accidental trips
+[*][b]Random Trip[/b] button — server picks a surprise destination; configurable price and optional toggle
+[/list]
 
 [b]Travel System[/b]
 [list]
@@ -42,6 +52,15 @@ Adds admin-placed bus stops to any server. Players walk up to a stop, pick a des
 [*][b]Dynamic[/b] — fare calculated by distance, scaled by base price, price-per-tile, and multiplier
 [*][b]Available toggle[/b] — disable a stop without deleting it; hidden from players and unavailable as a destination
 [*][b]Return Trip[/b] — when enabled, traveling to this stop remembers your origin so you can return in one click without cost
+[/list]
+
+[b]Economy Integration[/b]
+[list]
+[*]By default fares are paid with an inventory item (Base.Money or any custom item)
+[*]Bank mods can integrate as the payment backend by exposing a simple 3-function Lua API
+[*]Items and bank can be active simultaneously — items are deducted first, bank covers any shortfall
+[*]Includes a ready-made bridge example for [b]Survivor Shop[/b]
+[*][url=https://steamcommunity.com/workshop/filedetails/discussion/3711522956/809100989726475391/]Full integration guide and API reference[/url]
 [/list]
 
 [b]Admin Panel[/b]
@@ -79,9 +98,14 @@ Found under [b]Sandbox → Bus Stop Fast Travel[/b]:
 
 [table]
 [tr][th]Option[/th][th]Default[/th][th]Description[/th][/tr]
-[tr][td]Currency Item[/td][td]Base.Money[/td][td]The item players pay with — any valid item type string[/td][/tr]
-[tr][td]Base Price[/td][td]1[/td][td]Minimum fare applied to every trip[/td][/tr]
-[tr][td]Price Per Tile[/td][td]1[/td][td]Extra cost per tile of distance (÷1000) used in Dynamic pricing[/td][/tr]
+[tr][td]Pay with Items[/td][td]Yes[/td][td]Deduct fares from inventory. When both sources are active, items are charged first.[/td][/tr]
+[tr][td]Pay with Bank[/td][td]No[/td][td]Deduct fares via a bank mod API. Covers any shortfall left by items.[/td][/tr]
+[tr][td]Bank Mod Global[/td][td](empty)[/td][td]Lua global name the bank mod exposes its API under. Required when Pay with Bank is enabled.[/td][/tr]
+[tr][td]Currency Item[/td][td]Base.Money[/td][td]The item players pay with. Only used when Pay with Items is enabled.[/td][/tr]
+[tr][td]Base Price[/td][td]1[/td][td]Minimum fare applied to every trip.[/td][/tr]
+[tr][td]Price Per Tile[/td][td]1[/td][td]Extra cost per tile of distance (÷1000) used in Dynamic pricing.[/td][/tr]
+[tr][td]Enable Random Trip[/td][td]Yes[/td][td]Show the Random Trip button in the travel panel.[/td][/tr]
+[tr][td]Random Trip Price[/td][td]0[/td][td]Flat fare charged for a random trip. 0 = free.[/td][/tr]
 [/table]
 
 [b]Dynamic Price Formula:[/b] [i]ceil( (BasePrice + distance × (PricePerTile ÷ 1000)) × stop_multiplier )[/i]
@@ -103,7 +127,7 @@ Found under [b]Sandbox → Bus Stop Fast Travel[/b]:
 
 [table]
 [tr][td]Mod ID[/td][td]BusStopFastTravel[/td][/tr]
-[tr][td]Version[/td][td]1.0[/td][/tr]
+[tr][td]Version[/td][td]1.1[/td][/tr]
 [tr][td]Build[/td][td]42+[/td][/tr]
 [/table]
 
@@ -120,3 +144,7 @@ This mod may [b]not[/b] be included in modpacks, collections distributed as a si
 [h2]Tested On[/h2]
 
 Dedicated server (Linux) · Build 42+
+
+
+Workshop ID: 3711522956
+Mod ID: BusStopFastTravel

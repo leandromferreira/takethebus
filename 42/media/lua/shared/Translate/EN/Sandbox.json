@@ -1,0 +1,19 @@
+{
+    "Sandbox_BusStop":                               "Bus Stop Fast Travel",
+    "Sandbox_BusStop_UseItemPayment":                "Pay with Items",
+    "Sandbox_BusStop_UseItemPayment_tooltip":        "When enabled, fares are deducted from the player's inventory (Currency Item). If both Pay with Items and Pay with Bank are active, items are deducted first.",
+    "Sandbox_BusStop_UseBankPayment":                "Pay with Bank",
+    "Sandbox_BusStop_UseBankPayment_tooltip":        "When enabled, fares are deducted from a bank mod's balance via its API (requires Bank Mod Global). If both sources are active, the bank covers any amount that items could not cover.",
+    "Sandbox_BusStop_BankModGlobal":                 "Bank Mod Global",
+    "Sandbox_BusStop_BankModGlobal_tooltip":         "Name of the Lua global the bank mod exposes its API under (e.g. MyBankMod). Must have a .API table with canAfford, deduct, formatLabel. Only used when Pay with Bank is enabled.",
+    "Sandbox_BusStop_CurrencyItem":                  "Currency Item",
+    "Sandbox_BusStop_CurrencyItem_tooltip":          "Item type used as bus fare currency (e.g. Base.Money). Only used when Pay with Items is enabled.",
+    "Sandbox_BusStop_BasePrice":                     "Base Price",
+    "Sandbox_BusStop_BasePrice_tooltip":             "Base cost in currency items for any trip, regardless of distance.",
+    "Sandbox_BusStop_PricePerTile":                  "Price Per Tile (x0.001)",
+    "Sandbox_BusStop_PricePerTile_tooltip":          "Extra cost per tile of distance for dynamic pricing. Value is multiplied by 0.001 — default 1 means 0.001 per tile.",
+    "Sandbox_BusStop_EnableRandomTrip":              "Enable Random Trip",
+    "Sandbox_BusStop_EnableRandomTrip_tooltip":      "When enabled, a Random Trip button appears in the travel panel. The destination is chosen randomly by the server from all available stops.",
+    "Sandbox_BusStop_RandomTripPrice":               "Random Trip Price",
+    "Sandbox_BusStop_RandomTripPrice_tooltip":       "Flat fare charged when a player uses the Random Trip button. Set to 0 for free random trips."
+}

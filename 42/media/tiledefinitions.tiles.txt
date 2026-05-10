@@ -1,0 +1,21 @@
+version = 1
+tileset
+{
+    file = bus
+    size = 8,4
+    id = 1
+    // bus_0
+    tile
+    {
+        xy = 0,0
+        HitByCar = 
+        StopCar = 
+    }
+    // bus_1
+    tile
+    {
+        xy = 1,0
+        HitByCar = 
+        StopCar = 
+    }
+}

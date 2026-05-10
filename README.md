@@ -9,6 +9,10 @@ A multiplayer-focused fast travel mod for Project Zomboid B42. Server admins pla
 - Admin-placed bus stops at any coordinate
 - Per-stop price configuration (Free, Fixed, or Dynamic by distance)
 - Configurable currency (any item type via Sandbox Options)
+- **Economy integration** — connect any bank mod as the payment backend via a simple Lua API
+- **Search bar + scrollable destination list** — find stops quickly even with dozens of destinations
+- **Select-then-confirm** travel flow — click a stop to preview price, then confirm to travel
+- **Random Trip** — surprise destination button with configurable price (optional, server toggle)
 - Cinematic fade-to-black transition with bus arrival/departure sounds
 - Arrival protection: zombies won't attack for a few seconds after teleport
 - Return-trip memory: stops can remember where you came from
@@ -24,9 +28,11 @@ A multiplayer-focused fast travel mod for Project Zomboid B42. Server admins pla
 
 1. Walk within 3 tiles of a bus stop sign
 2. Right-click → **Use bus stop: [name]**
-3. The travel panel opens showing all available destinations and their fares
-4. Click a destination to travel — the screen fades to black, you are teleported, and the screen fades back in
-5. If the destination stop has **Return Trip** enabled, a return button appears at the top of the panel on your next use
+3. The travel panel opens — use the search bar to filter destinations or scroll the list
+4. Click a destination to select it — the info line and travel button update to show the stop name and fare
+5. Click **"Travel to [name]"** to confirm — the screen fades to black, you are teleported, and the screen fades back in
+6. If the destination stop has **Return Trip** enabled, a return button appears at the top of the panel on your next use
+7. The **Random Trip** button (if enabled by the server) sends you to a surprise destination
 
 ### For Admins
 
@@ -57,9 +63,14 @@ Found under **Sandbox → Bus Stop Fast Travel**:
 
 | Option | Default | Description |
 |---|---|---|
-| **Currency Item** | `Base.Money` | The item type players pay with (any valid item type string) |
+| **Pay with Items** | `true` | Deduct fares from the player's inventory. When both sources are active, items are deducted first. |
+| **Pay with Bank** | `false` | Deduct fares via a bank mod API. The bank covers any shortfall that items could not cover. |
+| **Bank Mod Global** | *(empty)* | Lua global the bank mod exposes its API under (e.g. `MyBankMod`). Required when Pay with Bank is enabled. |
+| **Currency Item** | `Base.Money` | Item type players pay with (only used when Pay with Items is enabled) |
 | **Base Price** | `1` | Minimum fare applied to every trip |
 | **Price Per Tile** | `1` | Extra cost per tile of distance (divided by 1000, used in Dynamic pricing) |
+| **Enable Random Trip** | `true` | Show the Random Trip button in the travel panel |
+| **Random Trip Price** | `0` | Flat fare charged for a random trip (0 = free) |
 
 ### Dynamic Price Formula
 
@@ -69,9 +80,31 @@ price = ceil((BasePrice + distance_in_tiles * (PricePerTile / 1000)) * stop_mult
 
 ---
 
+## Economy Integration
+
+BusStop supports pluggable payment backends. Any bank or economy mod can integrate by exposing a global Lua API table:
+
+```lua
+MyBankMod = MyBankMod or {}
+MyBankMod.API = {
+    canAfford   = function(player, amount) ... end,
+    deduct      = function(player, amount) ... end,
+    formatLabel = function(amount)         ... end,
+}
+```
+
+Enable it in Sandbox Options by setting **Pay with Bank = true** and **Bank Mod Global = MyBankMod**.
+
+Both sources can be active at the same time: items are deducted first, and the bank covers any remaining shortfall.
+
+See [INTEGRATION.md](INTEGRATION.md) for the full protocol, a Survivor Shop bridge example, and fail-safe behavior.
+
+---
+
 ## Multiplayer
 
 - Fully server-authoritative: all travel requests are validated server-side
+- Random trip destination is chosen by the server — clients cannot influence which stop is picked
 - Admins and moderators can build/remove/manage stops
 - Stop data is saved to `Zomboid/Lua/BusStopData.lua` on the server
 - Stop list is broadcast to all clients on join and after any change
@@ -91,7 +124,7 @@ price = ceil((BasePrice + distance_in_tiles * (PricePerTile / 1000)) * stop_mult
 | | |
 |---|---|
 | Mod ID | `BusStopFastTravel` |
-| Version | 1.0 |
+| Version | 1.1 |
 | Build | 42+ |
 | Multiplayer | Yes |
 | Added mid-game | Yes |

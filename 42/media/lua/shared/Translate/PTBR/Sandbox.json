@@ -1,0 +1,19 @@
+{
+    "Sandbox_BusStop":                               "Viagem Rápida de Ônibus",
+    "Sandbox_BusStop_UseItemPayment":                "Pagar com Itens",
+    "Sandbox_BusStop_UseItemPayment_tooltip":        "Quando ativo, as passagens são descontadas do inventário do jogador (Item de Moeda). Se ambos estiverem ativos, os itens são descontados primeiro.",
+    "Sandbox_BusStop_UseBankPayment":                "Pagar com Banco",
+    "Sandbox_BusStop_UseBankPayment_tooltip":        "Quando ativo, as passagens são descontadas do saldo de um mod de banco via sua API (requer Global do Mod de Banco). Se ambos estiverem ativos, o banco cobre o valor que os itens não cobrirem.",
+    "Sandbox_BusStop_BankModGlobal":                 "Global do Mod de Banco",
+    "Sandbox_BusStop_BankModGlobal_tooltip":         "Nome da variável global Lua que o mod de banco expõe sua API (ex: MyBankMod). Deve ter uma tabela .API com canAfford, deduct, formatLabel. Usado apenas quando Pagar com Banco está ativo.",
+    "Sandbox_BusStop_CurrencyItem":                  "Item de Moeda",
+    "Sandbox_BusStop_CurrencyItem_tooltip":          "Tipo de item usado como moeda para as passagens (ex: Base.Money). Usado apenas quando Pagar com Itens está ativo.",
+    "Sandbox_BusStop_BasePrice":                     "Preço Base",
+    "Sandbox_BusStop_BasePrice_tooltip":             "Custo base em itens de moeda para qualquer viagem, independente da distância.",
+    "Sandbox_BusStop_PricePerTile":                  "Preço por Tile (x0.001)",
+    "Sandbox_BusStop_PricePerTile_tooltip":          "Custo extra por tile de distância no modo dinâmico. O valor é multiplicado por 0.001 — padrão 1 = 0.001 por tile.",
+    "Sandbox_BusStop_EnableRandomTrip":              "Habilitar Viagem Aleatória",
+    "Sandbox_BusStop_EnableRandomTrip_tooltip":      "Quando ativo, um botão de Viagem Aleatória aparece na interface de viagem. O destino é sorteado pelo servidor entre as paradas disponíveis.",
+    "Sandbox_BusStop_RandomTripPrice":               "Preço da Viagem Aleatória",
+    "Sandbox_BusStop_RandomTripPrice_tooltip":       "Valor cobrado quando o jogador usa o botão de Viagem Aleatória. 0 = gratuito."
+}

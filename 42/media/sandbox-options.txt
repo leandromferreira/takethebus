@@ -1,0 +1,79 @@
+VERSION = 1,
+
+option BusStop.UseItemPayment
+{
+    type = boolean,
+    default = true,
+    page = BusStop,
+    translation = BusStop_UseItemPayment,
+    tooltip = BusStop_UseItemPayment_tooltip,
+}
+
+option BusStop.UseBankPayment
+{
+    type = boolean,
+    default = false,
+    page = BusStop,
+    translation = BusStop_UseBankPayment,
+    tooltip = BusStop_UseBankPayment_tooltip,
+}
+
+option BusStop.BankModGlobal
+{
+    type = string,
+    default = ,
+    page = BusStop,
+    translation = BusStop_BankModGlobal,
+    tooltip = BusStop_BankModGlobal_tooltip,
+}
+
+option BusStop.CurrencyItem
+{
+    type = string,
+    default = Base.Money,
+    page = BusStop,
+    translation = BusStop_CurrencyItem,
+    tooltip = BusStop_CurrencyItem_tooltip,
+}
+
+option BusStop.BasePrice
+{
+    type = integer,
+    default = 1,
+    min = 0,
+    max = 999,
+    page = BusStop,
+    translation = BusStop_BasePrice,
+    tooltip = BusStop_BasePrice_tooltip,
+}
+
+option BusStop.PricePerTile
+{
+    type = integer,
+    default = 1,
+    min = 0,
+    max = 1000,
+    page = BusStop,
+    translation = BusStop_PricePerTile,
+    tooltip = BusStop_PricePerTile_tooltip,
+}
+
+option BusStop.EnableRandomTrip
+{
+    type = boolean,
+    default = true,
+    page = BusStop,
+    translation = BusStop_EnableRandomTrip,
+    tooltip = BusStop_EnableRandomTrip_tooltip,
+}
+
+option BusStop.RandomTripPrice
+{
+    type = integer,
+    default = 0,
+    min = 0,
+    max = 9999,
+    page = BusStop,
+    translation = BusStop_RandomTripPrice,
+    tooltip = BusStop_RandomTripPrice_tooltip,
+}

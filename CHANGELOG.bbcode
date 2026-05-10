@@ -1,0 +1,66 @@
+[h1]Changelog[/h1]
+
+[h2]1.1 — Unreleased[/h2]
+
+[h3]Added[/h3]
+
+[b]Economy Integration[/b]
+[list]
+[*]Generic bank mod API: bank mods expose [b]MyMod.API = { canAfford, deduct, formatLabel }[/b] as a Lua global; BusStop resolves it via [b]_G[BankModGlobal].API[/b]
+[*]New sandbox options: [b]Pay with Items[/b] (boolean, default on) and [b]Pay with Bank[/b] (boolean, default off)
+[*]Split payment: when both sources are active, items are deducted first; the bank covers any remaining shortfall
+[*]New sandbox option: [b]Bank Mod Global[/b] — name of the Lua global the bank mod exposes its API under
+[*][b]BusStopEconomy.lua[/b] (shared): [b]getAPI()[/b] resolves and validates the external bank API; [b]formatLabel()[/b] formats prices for the active payment mode
+[*][b]INTEGRATION.md[/b] and [b]INTEGRATION.bbcode[/b]: guides for bank mod authors explaining how to expose the API, a Survivor Shop bridge workaround, fail-safe behaviour, and a checklist
+[/list]
+
+[b]Player Travel UI[/b]
+[list]
+[*]Search bar above the destination list — filters stops by name in real time
+[*]Scrollable destination list ([b]ISScrollingListBox[/b]) — handles any number of stops without overflowing the screen
+[*]Select-then-confirm flow: clicking a row highlights it and updates the travel button; travel only happens when the [b]"Travel to X"[/b] button is clicked, preventing accidental trips
+[*]Selected destination and fare shown in an info line above the travel button
+[*]Panel height adapts dynamically (capped at 50% screen height for the list area)
+[/list]
+
+[b]Random Trip[/b]
+[list]
+[*][b]"Random Trip" button[/b] at the top of the travel panel — destination is picked server-side (client cannot influence which stop is chosen)
+[*]New sandbox option: [b]Enable Random Trip[/b] (boolean, default on) — hides the button when disabled
+[*]New sandbox option: [b]Random Trip Price[/b] (integer, default 0 = free) — flat fare charged regardless of distance
+[*]Server cycles through available stops using a round-robin counter (no dependency on [b]math.random[/b] or [b]ZombRand[/b], which are unavailable server-side in B42)
+[/list]
+
+[b]Documentation[/b]
+[list]
+[*]README.md updated: new features section, updated player walkthrough, expanded sandbox options table with Random Trip and Economy options, corrected Economy Integration section
+[*]STEAM_DESC.txt updated: new "Travel Panel" feature block, updated How It Works bullets, updated sandbox options table
+[*]CHANGELOG.md and CHANGELOG.bbcode created
+[/list]
+
+[h3]Fixed[/h3]
+[list]
+[*][b]Return trip to disabled stop[/b]: traveling to a stop with Return Trip enabled and then returning failed when the origin stop was disabled. The [b]available[/b] check now only applies to normal travel; return trips bypass it.
+[*][b]Server handler crashes swallowed silently[/b]: the [b]OnClientCommand[/b] dispatcher now wraps each handler in [b]pcall[/b] and logs errors with prefix [b][BusStop] ERROR in handler[/b], making server-side failures visible.
+[*][b]math.random nil[/b]: Kahlua's server context does not expose [b]math.random[/b]. Replaced with a module-level round-robin counter using only basic Lua arithmetic.
+[*][b]ZombRand nil[/b]: [b]ZombRand[/b] is also unavailable server-side. Same fix as above.
+[*][b]Float index crash[/b] ([i]candidates[1.5][/i]): [b]getTimestampMs()[/b] can return a float with a fractional part; using [b]%[/b] on it produced a non-integer table index. Fixed by the integer counter approach.
+[*][b]isRandom / isReturn boolean comparison[/b]: server now accepts both [b]true[/b] (boolean) and [b]"true"[/b] (string) to handle potential Kahlua network serialization differences.
+[*][b]Syntax error[/b] ([i]function arguments expected near 'and'[/i]): Kahlua does not allow [b]self:method and ...[/b] without [b]()[/b] — replaced [b]self:getScrollBarWidth and self:getScrollBarWidth() or 0[/b] with [b]self.vscroll and self.vscroll.width or 0[/b].
+[*][b]setEmptyString crash[/b]: [b]ISTextEntryBox:setEmptyString()[/b] does not exist in this PZ version; calling it via [b]pcall[/b] still caused a Java [b]RuntimeException[/b] that escaped Kahlua's pcall. The call was removed entirely.
+[*][b]getMode() nil[/b] (prior session): a leftover debug print called [b]BusStopEconomy.getMode()[/b] after that function was removed; replaced with inline sandbox var checks.
+[*][b]Kahlua null serialization[/b] (prior session): sending [b]{returnTrip=nil}[/b] over the network serializes to Java null and crashes the client handler. Fixed by always sending [b]{cleared=true}[/b] for nil-value payloads.
+[*][b]IsoThumpable.new() 5-arg crash[/b] (prior session): B42 requires [b]sq:getCell()[/b] instead of [b]getCell()[/b] as the first argument.
+[*][b]Arrival protection had no effect[/b]: [b]setZombiesDontAttack[/b] was called client-side, but zombie AI runs on the server and ignores client-only flag changes for non-admin players. Fixed by applying the flag server-side ([b]BusStopServer.lua[/b]) with an [b]OnTick[/b] cleanup after 5 seconds.
+[*][b]Arrival protection didn't stop already-targeting zombies[/b]: [b]setZombiesDontAttack[/b] alone does not interrupt zombies already in attack state. Added [b]OnZombieUpdate[/b] listener (SafeUserLogin pattern): each frame clears zombie detection via [b]zombie:spotted(player, false)[/b] and temporarily disables any zombie facing the player via [b]zombie:setUseless(true)[/b].
+[*][b]Countdown HUD frozen on screen after death[/b]: when the player died during protection, [b]OnPlayerUpdate[/b] stopped firing, [b]stopProtection()[/b] was never called, and the HUD remained visible indefinitely — including after respawn. Fixed by adding an [b]OnPlayerDeath[/b] listener that triggers [b]stopProtection()[/b] immediately.
+[*][b]Listener leak after death[/b]: [b]OnZombieUpdate[/b] and [b]OnPlayerUpdate[/b] were left registered after player death with no path to remove themselves. [b]stopProtection()[/b] now explicitly removes all three listeners ([b]OnZombieUpdate[/b], [b]OnPlayerUpdate[/b], [b]OnPlayerDeath[/b]) regardless of how it is triggered.
+[/list]
+
+[h3]Changed[/h3]
+[list]
+[*]Sandbox option [b]PaymentMode[/b] (string enum) replaced by two independent booleans [b]UseItemPayment[/b] / [b]UseBankPayment[/b] supporting simultaneous use
+[*]Destination list no longer triggers travel on single click — now requires explicit confirmation via the travel button
+[*]Server-side logging reduced: only errors and key travel events are printed; routine per-frame or per-request noise removed
+[*]All client command handlers in [b]BusStopServer.lua[/b] are now protected by [b]pcall[/b] in the dispatcher
+[/list]

@@ -1,0 +1,161 @@
+[h1]BusStop Economy Integration Guide[/h1]
+
+This guide is intended for [b]bank mod authors[/b] who want their mod to natively support BusStop Fast Travel as a payment backend.
+
+[hr]
+
+[h2]How it works[/h2]
+
+BusStop calls your mod through a Lua global API table that you expose. Your mod stays in full control of how balances are stored — BusStop never touches your internal data directly.
+
+When a player travels, BusStop:
+[list]
+[*]Deducts available inventory items first (if [b]Pay with Items[/b] is enabled on the server)
+[*]Calls your API's [b]canAfford[/b] with the [b]remaining amount[/b] (may be the full fare if items are disabled or insufficient)
+[*]If affordable, calls [b]deduct[/b] for that remaining amount
+[/list]
+
+[hr]
+
+[h2]Adding the API to your mod[/h2]
+
+[h3]Where to put the code[/h3]
+
+Create (or edit) a file inside your mod's server Lua folder:
+
+[code]
+mods/
+└── MyBankMod/
+    └── media/
+        └── lua/
+            └── server/
+                └── MyBankMod_BusStopAPI.lua   ← new file (name is up to you)
+[/code]
+
+This file is loaded automatically by PZ on the server — no [b]require[/b], no [b]mod.info[/b] changes needed.
+
+[h3]What to write[/h3]
+
+In that file, expose a global table with an [b].API[/b] sub-table:
+
+[code]
+-- Inside your bank mod's server Lua file
+
+MyBankMod = MyBankMod or {}
+
+MyBankMod.API = {
+
+    -- Returns true if the player can afford `amount`.
+    -- amount = remaining fare after items were already deducted.
+    -- On failure: false, errMsgKey, { label, needed, have }
+    canAfford = function(player, amount)
+        local balance = MyBankMod.getBalance(player)
+        if balance >= amount then return true end
+        return false, "err_no_currency", { "MyBank", tostring(amount), tostring(balance) }
+    end,
+
+    -- Deducts `amount`. Called only after canAfford returned true.
+    deduct = function(player, amount)
+        MyBankMod.setBalance(player, MyBankMod.getBalance(player) - amount)
+    end,
+
+    -- Returns a formatted price string shown in the travel UI.
+    -- Only used when Pay with Items is disabled (bank-only mode).
+    formatLabel = function(amount)
+        if amount <= 0 then return "Free" end
+        return "$" .. tostring(amount)
+    end,
+}
+[/code]
+
+That's all. No dependency on BusStop, no [b]require[/b], no events. If BusStop is not installed the table just sits unused.
+
+[hr]
+
+[h2]Server configuration[/h2]
+
+Once your mod exposes the API, the server admin enables the integration via sandbox options:
+
+[table]
+[tr][th]Option[/th][th]Value[/th][/tr]
+[tr][td]BusStop.UseBankPayment[/td][td]true[/td][/tr]
+[tr][td]BusStop.BankModGlobal[/td][td]The exact name of your Lua global (e.g. MyBankMod)[/td][/tr]
+[tr][td]BusStop.UseItemPayment[/td][td]true = items first, false = bank-only[/td][/tr]
+[/table]
+
+[b]Payment combinations:[/b]
+[list]
+[*][b]Items only[/b] (default) — UseItemPayment=true, UseBankPayment=false
+[*][b]Bank only[/b] — UseItemPayment=false, UseBankPayment=true
+[*][b]Items first, bank as overflow[/b] — UseItemPayment=true, UseBankPayment=true
+[/list]
+
+[hr]
+
+[h2]Survivor Shop — bridge workaround[/h2]
+
+Survivor Shop does not natively expose a [b].API[/b] table. If you are running a server with both mods and want them to work together [b]without modifying Survivor Shop's files[/b], you can create a small bridge script inside your server's [b]Lua/[/b] scripts folder (not inside either mod).
+
+[i]Note: the ideal solution is for the Survivor Shop author to add the .API table directly to their mod.[/i]
+
+[code]
+-- File: <server>/Lua/SurvivorShopBusBridge.lua
+
+SurvivorShopBus = SurvivorShopBus or {}
+
+SurvivorShopBus.API = {
+
+    canAfford = function(player, amount)
+        if not SurvivorShop then
+            return false, "err_no_currency", { "SS Bank", tostring(amount), "0" }
+        end
+        local key = SurvivorShop.getAccountKey(player)
+        local md  = ModData.getOrCreate("SurvivorShop_Balances")
+        local bal = (md.balances and tonumber(md.balances[key])) or 0
+        if bal >= amount then return true end
+        return false, "err_no_currency", { "SS Bank", tostring(amount), tostring(bal) }
+    end,
+
+    deduct = function(player, amount)
+        if not SurvivorShop then return end
+        local key = SurvivorShop.getAccountKey(player)
+        local md  = ModData.getOrCreate("SurvivorShop_Balances")
+        if not md.balances then md.balances = {} end
+        local bal = tonumber(md.balances[key]) or 0
+        md.balances[key] = math.max(0, bal - amount)
+    end,
+
+    formatLabel = function(amount)
+        if amount <= 0 then return "Free" end
+        return "$" .. string.format("%.2f", amount)
+    end,
+}
+[/code]
+
+Set [b]BusStop.BankModGlobal = SurvivorShopBus[/b] in sandbox options.
+
+[hr]
+
+[h2]Fail-safe behaviour[/h2]
+
+[list]
+[*][b]Both options disabled[/b] — falls back to item-only, no crash
+[*][b]BankModGlobal empty[/b] — travel blocked, error logged with [b][BusStop][ECON][/b] prefix
+[*][b]Global not found[/b] — same (mod not loaded)
+[*][b].API fields missing[/b] — same (integration incomplete)
+[/list]
+
+No crash, no silent money loss.
+
+[hr]
+
+[h2]Integration checklist (for mod authors)[/h2]
+
+[list]
+[*] Add [b]MyBankMod.API[/b] with [b]canAfford[/b], [b]deduct[/b], [b]formatLabel[/b] to a server-side Lua file in your mod
+[*] Document the global name so server admins know what to set in [b]BankModGlobal[/b]
+[*] Verify [b]canAfford[/b] handles amount = 0 gracefully (return true)
+[*] Verify [b]deduct[/b] never sets balance below zero
+[*] Test bank-only: UseItemPayment=false, UseBankPayment=true
+[*] Test both active: have fewer items than the fare — items go first, bank covers the rest
+[/list]
