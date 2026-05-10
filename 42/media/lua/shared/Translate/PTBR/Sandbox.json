@@ -15,5 +15,7 @@
     "Sandbox_BusStop_EnableRandomTrip":              "Habilitar Viagem Aleatória",
     "Sandbox_BusStop_EnableRandomTrip_tooltip":      "Quando ativo, um botão de Viagem Aleatória aparece na interface de viagem. O destino é sorteado pelo servidor entre as paradas disponíveis.",
     "Sandbox_BusStop_RandomTripPrice":               "Preço da Viagem Aleatória",
-    "Sandbox_BusStop_RandomTripPrice_tooltip":       "Valor cobrado quando o jogador usa o botão de Viagem Aleatória. 0 = gratuito."
+    "Sandbox_BusStop_RandomTripPrice_tooltip":       "Valor cobrado quando o jogador usa o botão de Viagem Aleatória. 0 = gratuito.",
+    "Sandbox_BusStop_ReturnTripHours":               "Duração da Viagem de Retorno (horas)",
+    "Sandbox_BusStop_ReturnTripHours_tooltip":       "Quantas horas de jogo o bilhete de retorno permanece válido após viajar para um destino. São horas in-game, não tempo real — avançam conforme o multiplicador de velocidade do tempo do servidor. O padrão é 24 horas in-game."
 }

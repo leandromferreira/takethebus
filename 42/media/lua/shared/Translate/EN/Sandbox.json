@@ -15,5 +15,7 @@
     "Sandbox_BusStop_EnableRandomTrip":              "Enable Random Trip",
     "Sandbox_BusStop_EnableRandomTrip_tooltip":      "When enabled, a Random Trip button appears in the travel panel. The destination is chosen randomly by the server from all available stops.",
     "Sandbox_BusStop_RandomTripPrice":               "Random Trip Price",
-    "Sandbox_BusStop_RandomTripPrice_tooltip":       "Flat fare charged when a player uses the Random Trip button. Set to 0 for free random trips."
+    "Sandbox_BusStop_RandomTripPrice_tooltip":       "Flat fare charged when a player uses the Random Trip button. Set to 0 for free random trips.",
+    "Sandbox_BusStop_ReturnTripHours":               "Return Trip Duration (hours)",
+    "Sandbox_BusStop_ReturnTripHours_tooltip":       "How many in-game hours a return ticket remains valid after traveling to a destination. These are in-game hours, not real time — they advance based on the server's time speed multiplier. Default is 24 in-game hours."
 }

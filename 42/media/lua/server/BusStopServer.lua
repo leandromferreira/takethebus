@@ -392,8 +392,10 @@ local function handleRequestTravel(player, args)
         pData.returnTrip = nil
         sendServerCommand(player, MODULE, "ReturnTripSync", { cleared = true })
     elseif dest.rememberreturn then
+        local sv2b   = SandboxVars.BusStop or {}
+        local hours  = sv2b.ReturnTripHours or 24
         local gt     = getGameTime()
-        local expiry = gt and (gt:getWorldAgeHours() + 24) or 999999
+        local expiry = gt and (gt:getWorldAgeHours() + hours) or 999999
         pData.returnTrip = { stopId = stopId, expiryHours = expiry }
         sendServerCommand(player, MODULE, "ReturnTripSync", { returnTrip = pData.returnTrip })
     end

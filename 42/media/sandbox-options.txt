@@ -77,3 +77,14 @@ option BusStop.RandomTripPrice
     translation = BusStop_RandomTripPrice,
     tooltip = BusStop_RandomTripPrice_tooltip,
 }
+
+option BusStop.ReturnTripHours
+{
+    type = integer,
+    default = 24,
+    min = 1,
+    max = 720,
+    page = BusStop,
+    translation = BusStop_ReturnTripHours,
+    tooltip = BusStop_ReturnTripHours_tooltip,
+}
