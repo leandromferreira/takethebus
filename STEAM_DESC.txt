@@ -106,6 +106,7 @@ Found under [b]Sandbox → Bus Stop Fast Travel[/b]:
 [tr][td]Price Per Tile[/td][td]1[/td][td]Extra cost per tile of distance (÷1000) used in Dynamic pricing.[/td][/tr]
 [tr][td]Enable Random Trip[/td][td]Yes[/td][td]Show the Random Trip button in the travel panel.[/td][/tr]
 [tr][td]Random Trip Price[/td][td]0[/td][td]Flat fare charged for a random trip. 0 = free.[/td][/tr]
+[tr][td]Return Trip Duration[/td][td]24[/td][td]How many in-game hours a return ticket stays valid after arrival. In-game hours — advance based on the server's time speed multiplier.[/td][/tr]
 [/table]
 
 [b]Dynamic Price Formula:[/b] [i]ceil( (BasePrice + distance × (PricePerTile ÷ 1000)) × stop_multiplier )[/i]

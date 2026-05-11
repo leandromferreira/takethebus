@@ -31,6 +31,11 @@
 [*]Server cycles through available stops using a round-robin counter (no dependency on [b]math.random[/b] or [b]ZombRand[/b], which are unavailable server-side in B42)
 [/list]
 
+[b]Return Trip[/b]
+[list]
+[*]New sandbox option: [b]Return Trip Duration[/b] (integer, default 24, range 1–720) — how many in-game hours a return ticket stays valid after arrival; replaces the previously hardcoded 24-hour window. In-game hours advance based on the server's time speed multiplier.
+[/list]
+
 [b]Documentation[/b]
 [list]
 [*]README.md updated: new features section, updated player walkthrough, expanded sandbox options table with Random Trip and Economy options, corrected Economy Integration section

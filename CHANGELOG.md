@@ -25,6 +25,9 @@
 - New sandbox option: **Random Trip Price** (integer, default 0 = free) — flat fare charged regardless of distance
 - Server cycles through available stops using a round-robin counter (no dependency on `math.random` or `ZombRand`, which are unavailable server-side in B42)
 
+#### Return Trip
+- New sandbox option: **Return Trip Duration** (integer, default 24, range 1–720) — how many in-game hours a return ticket stays valid after arrival; replaces the previously hardcoded 24-hour window. In-game hours advance based on the server's time speed multiplier.
+
 ### Fixed
 
 - **Return trip to disabled stop**: traveling to a stop with Return Trip enabled and then returning failed when the origin stop was disabled. The `available` check now only applies to normal travel; return trips bypass it.
