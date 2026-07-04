@@ -42,8 +42,12 @@ local function validReturn(currentStop)
         local gt = getGameTime()
         if gt then hoursLeft = math.max(0, math.floor(expiry - gt:getWorldAgeHours())) end
     end
+    -- Return trips ignore the origin's `available` flag: the player literally
+    -- just came from there, and the server already exempts return travel from
+    -- the availability check (see handleRequestTravel). `live` still being nil
+    -- (origin deleted) correctly hides the button — the server would reject it.
     local live = findStopById(r.id)
-    if live and live.available then return live, hoursLeft end
+    if live then return live, hoursLeft end
     return nil, nil
 end
 
