@@ -36,6 +36,13 @@
 [*]New sandbox option: [b]Return Trip Duration[/b] (integer, default 24, range 1–720) — how many in-game hours a return ticket stays valid after arrival; replaces the previously hardcoded 24-hour window. In-game hours advance based on the server's time speed multiplier.
 [/list]
 
+[b]Persistence & Wipe-Proof Stops[/b]
+[list]
+[*]The [b]stop registry is now the single source of truth[/b]; the physical bus-stop tile is derived from it, not the other way around
+[*]Stops saved to [i]Zomboid/Lua/BusStopData.lua[/i] carry across worlds — starting a new world from an existing config keeps every stop usable
+[*][b]On-demand tile materialization[/b]: when a player right-clicks a registered stop whose tile is missing (new world, or a soft-wiped region), the client requests it and the server spawns the object ([b]EnsureStopTile[/b] handler / [b]spawnStopObject[/b] helper), validating player proximity server-side
+[/list]
+
 [b]Documentation[/b]
 [list]
 [*]README.md updated: new features section, updated player walkthrough, expanded sandbox options table with Random Trip and Economy options, corrected Economy Integration section
@@ -60,6 +67,10 @@
 [*][b]Arrival protection didn't stop already-targeting zombies[/b]: [b]setZombiesDontAttack[/b] alone does not interrupt zombies already in attack state. Added [b]OnZombieUpdate[/b] listener (SafeUserLogin pattern): each frame clears zombie detection via [b]zombie:spotted(player, false)[/b] and temporarily disables any zombie facing the player via [b]zombie:setUseless(true)[/b].
 [*][b]Countdown HUD frozen on screen after death[/b]: when the player died during protection, [b]OnPlayerUpdate[/b] stopped firing, [b]stopProtection()[/b] was never called, and the HUD remained visible indefinitely — including after respawn. Fixed by adding an [b]OnPlayerDeath[/b] listener that triggers [b]stopProtection()[/b] immediately.
 [*][b]Listener leak after death[/b]: [b]OnZombieUpdate[/b] and [b]OnPlayerUpdate[/b] were left registered after player death with no path to remove themselves. [b]stopProtection()[/b] now explicitly removes all three listeners ([b]OnZombieUpdate[/b], [b]OnPlayerUpdate[/b], [b]OnPlayerDeath[/b]) regardless of how it is triggered.
+[*][b]Stops unusable in a new world / after a soft-wipe[/b]: a stop present in the config but with no physical tile showed a map marker yet could not be used — no context-menu option, and travel was rejected. Usage is now validated against the registry (not the tile), and the tile respawns on first interaction, so these stops work again.
+[*][b]Destructive orphan cleanup removed[/b]: [b]cleanOrphanedStops[/b] deleted registry entries whose loaded tile had no matching object, silently wiping stops near a new world's spawn region while leaving distant ones as ghosts. Removed entirely — the registry is authoritative.
+[*][b]Return trip button hidden from a disabled/unlisted origin[/b]: the client's [b]validReturn[/b] still required the origin stop to be [b]available[/b], so the return button never appeared even though the server permits the trip. The button now shows whenever the origin still exists in the registry.
+[*][b]"Use bus stop" option appeared away from the stop and lingered[/b]: the context-menu check keyed off player proximity, so the option showed on any right-click while merely standing near a stop and stuck after interacting with it once. Detection is now anchored to the clicked tile matching a registered stop.
 [/list]
 
 [h3]Changed[/h3]
@@ -68,4 +79,7 @@
 [*]Destination list no longer triggers travel on single click — now requires explicit confirmation via the travel button
 [*]Server-side logging reduced: only errors and key travel events are printed; routine per-frame or per-request noise removed
 [*]All client command handlers in [b]BusStopServer.lua[/b] are now protected by [b]pcall[/b] in the dispatcher
+[*]Travel validation ([b]handleRequestTravel[/b]) no longer requires a physical tile object — it checks the stop exists in the registry and that the player is on the same floor and within range of the registry coordinate ([b]tileHasBusStop[/b] removed)
+[*]Context-menu use-distance check now uses the same Euclidean radius the server validates against (was an axis-aligned box), so the option only appears where travel actually succeeds — no more diagonal-corner mismatch
+[*][b]STEAM_DESC.txt[/b]: added a "Persistence & Wipe-Proof" feature block
 [/list]

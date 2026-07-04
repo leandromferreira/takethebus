@@ -2,5 +2,6 @@ name=Bus Stop Fast Travel
 id=BusStopFastTravel
 description=Adds admin-placed bus stops that allow controlled fast travel between destinations in multiplayer servers.
 modversion=1.0
+author=leozimmelo
 pack=bus
 tiledef=tiledefinitions 8945
