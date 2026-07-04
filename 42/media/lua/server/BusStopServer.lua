@@ -139,33 +139,6 @@ local function broadcastStopList()
     if cmdErr then print("[BusStop] ERROR broadcastStopList sendServerCommand: " .. tostring(cmdErr)) end
 end
 
--- Checks all registered stops whose tile is currently loaded.
--- Removes any entry whose tile is loaded but has no matching physical object.
--- Stops in unloaded chunks are left untouched (can't verify).
-local function cleanOrphanedStops()
-    local cellOk, cell = pcall(getCell)
-    if not cellOk or not cell then return end
-    local anyRemoved = false
-    for i = #stops, 1, -1 do
-        local s  = stops[i]
-        local sq = cell:getGridSquare(s.x, s.y, s.z)
-        if sq then
-            local found = false
-            local objs  = sq:getObjects()
-            for j = 0, objs:size() - 1 do
-                local md = objs:get(j):getModData()
-                if md.busStop and md.stopId == s.id then found = true; break end
-            end
-            if not found then
-                print("[BusStop] Orphan removed: " .. s.displayname .. " (" .. s.id .. ")")
-                table.remove(stops, i)
-                anyRemoved = true
-            end
-        end
-    end
-    if anyRemoved then saveStops(); pcall(broadcastStopList) end
-end
-
 -- ── Helpers ───────────────────────────────────────────────────────────────────
 
 -- msgKey: translation key; msgArgs: optional array of format args for the client.
@@ -180,27 +153,6 @@ end
 local function distanceSq(ax, ay, bx, by)
     local dx, dy = ax - bx, ay - by
     return dx * dx + dy * dy
-end
-
-local function tileHasBusStop(x, y, z, stopId)
-    local cellOk, cell = pcall(getCell)
-    if not cellOk or not cell then
-        print("[BusStop][CHECK] tileHasBusStop: getCell() failed")
-        return false
-    end
-    local sq = cell:getGridSquare(x, y, z)
-    if not sq then
-        print("[BusStop][CHECK] tileHasBusStop: no square at " .. x .. "," .. y .. "," .. z)
-        return false
-    end
-    local objs = sq:getObjects()
-    for i = 0, objs:size() - 1 do
-        local md = objs:get(i):getModData()
-        if md.busStop and md.stopId == stopId then return true end
-    end
-    print("[BusStop][CHECK] tileHasBusStop: no busStop object with stopId=" .. tostring(stopId)
-          .. " found at " .. x .. "," .. y .. "," .. z .. " (" .. objs:size() .. " object(s) checked)")
-    return false
 end
 
 local function hasNearbyZombies(player)
@@ -313,7 +265,6 @@ local function handleRequestTravel(player, args)
     local user   = tostring(player:getUsername())
     local stopId = args.stopId
     local destId = args.destinationId
-    local sx, sy, sz = args.x, args.y, args.z
 
     if player:getVehicle() then
         reply(player, "TravelResult", false, "err_in_vehicle"); return
@@ -321,16 +272,19 @@ local function handleRequestTravel(player, args)
     if hasNearbyZombies(player) then
         reply(player, "TravelResult", false, "err_zombies_nearby"); return
     end
-    if not (sx and sy and sz) then
-        reply(player, "TravelResult", false, "err_invalid_location"); return
-    end
-    if not tileHasBusStop(sx, sy, sz, stopId) then
+    -- Usage is validated against the server's own registry, not the physical
+    -- tile: a stop can exist in the registry without a spawned object yet (new
+    -- world loaded from an existing config, or a soft-wiped region). Coordinates
+    -- come from the registry, so the client cannot claim to be somewhere it isn't.
+    local currStop = findStop(stopId)
+    if not currStop then
         reply(player, "TravelResult", false, "err_stop_not_found"); return
     end
 
     local px, py = player:getX(), player:getY()
     local maxD   = BusStop.MAX_USE_DISTANCE
-    if distanceSq(px, py, sx, sy) > maxD * maxD then
+    if math.floor(player:getZ()) ~= currStop.z
+       or distanceSq(px, py, currStop.x, currStop.y) > maxD * maxD then
         reply(player, "TravelResult", false, "err_too_far"); return
     end
 
@@ -366,7 +320,6 @@ local function handleRequestTravel(player, args)
         reply(player, "TravelResult", false, "err_already_here"); return
     end
 
-    local currStop = findStop(stopId)
     local isFree   = isReturn and currStop and currStop.rememberreturn == true
 
     local price
@@ -412,6 +365,53 @@ local function handleRequestTravel(player, args)
     reply(player, "TravelResult", true, "msg_arrived", { dest.displayname })
 end
 
+-- Spawns the physical bus-stop IsoThumpable at the stop's registry coordinate.
+-- The registry is the source of truth: the object is derived from it and can be
+-- (re)created on demand when a player interacts with a stop whose tile is missing
+-- (new world loaded from an existing config, or a soft-wiped region).
+-- Idempotent: returns the existing object if one with this stopId already sits on
+-- the tile. Returns nil on failure (square not loaded / creation error).
+local function spawnStopObject(stop)
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell then
+        print("[BusStop] ERROR spawnStopObject: getCell() failed")
+        return nil
+    end
+    local sq = cell:getGridSquare(stop.x, stop.y, stop.z)
+    if not sq then
+        print("[BusStop] spawnStopObject: square not loaded at " .. stop.x .. "," .. stop.y .. "," .. stop.z)
+        return nil
+    end
+
+    -- Idempotency: bail if an object with this stopId is already on the tile.
+    local existing = sq:getObjects()
+    for i = 0, existing:size() - 1 do
+        local emd = existing:get(i):getModData()
+        if emd.busStop and emd.stopId == stop.id then return existing:get(i) end
+    end
+
+    local obj
+    local isoOk, isoErr = pcall(function()
+        obj = IsoThumpable.new(sq:getCell(), sq, "bus_0", false, {})
+    end)
+    if not isoOk or not obj then
+        print("[BusStop] ERROR spawnStopObject: IsoThumpable.new failed: " .. tostring(isoErr))
+        return nil
+    end
+
+    local md = obj:getModData()
+    md.busStop = true; md.stopId = stop.id; md.name = stop.displayname
+
+    local _, addErr = pcall(function() sq:AddSpecialObject(obj) end)
+    if addErr then print("[BusStop] ERROR spawnStopObject AddSpecialObject: " .. tostring(addErr)) end
+
+    pcall(function() obj:setMaxHealth(999999); obj:setHealth(999999) end)
+    pcall(function() obj:transmitCompleteItemToClients() end)
+    print("[BusStop] spawnStopObject: materialized '" .. tostring(stop.displayname)
+          .. "' (" .. tostring(stop.id) .. ") at " .. stop.x .. "," .. stop.y .. "," .. stop.z)
+    return obj
+end
+
 local function handleCreateStop(player, args)
     local user = tostring(player:getUsername())
     if not playerIsAdmin(player) then
@@ -421,46 +421,41 @@ local function handleCreateStop(player, args)
     local x, y, z = args.x, args.y, args.z
     local name     = (args.name and args.name ~= "") and args.name or "Bus Stop"
 
-    local cellOk, cell = pcall(getCell)
-    if not cellOk or not cell then
-        print("[BusStop] ERROR CreateStop: getCell() failed")
-        reply(player, "CreateResult", false, "err_invalid_tile"); return
-    end
-
-    local sq = cell:getGridSquare(x, y, z)
-    if not sq then
-        print("[BusStop] ERROR CreateStop: no square at " .. x .. "," .. y .. "," .. z)
-        reply(player, "CreateResult", false, "err_invalid_tile"); return
-    end
-
-    local stopId = string.format("stop_%d_%d_%d_%d", x, y, z, getTimestampMs() % 1000000)
-    local obj
-    local isoOk, isoErr = pcall(function()
-        obj = IsoThumpable.new(sq:getCell(), sq, "bus_0", false, {})
-    end)
-    if not isoOk or not obj then
-        print("[BusStop] ERROR CreateStop: IsoThumpable.new failed: " .. tostring(isoErr))
-        reply(player, "CreateResult", false, "err_invalid_tile"); return
-    end
-
-    local md = obj:getModData()
-    md.busStop = true; md.stopId = stopId; md.name = name
-
-    local _, addErr = pcall(function() sq:AddSpecialObject(obj) end)
-    if addErr then print("[BusStop] ERROR CreateStop AddSpecialObject: " .. tostring(addErr)) end
-
-    pcall(function() obj:setMaxHealth(999999); obj:setHealth(999999) end)
-    pcall(function() obj:transmitCompleteItemToClients() end)
-
-    table.insert(stops, {
-        id = stopId, displayname = name, x = x, y = y, z = z,
+    local newStop = {
+        id = string.format("stop_%d_%d_%d_%d", x, y, z, getTimestampMs() % 1000000),
+        displayname = name, x = x, y = y, z = z,
         pricetype = "dynamic", price_multiplier = 1.0, available = true, rememberreturn = false,
-    })
+    }
 
+    if not spawnStopObject(newStop) then
+        print("[BusStop] ERROR CreateStop: could not spawn stop object at " .. x .. "," .. y .. "," .. z)
+        reply(player, "CreateResult", false, "err_invalid_tile"); return
+    end
+
+    table.insert(stops, newStop)
     saveStops()
     broadcastStopList()
-    print("[BusStop] " .. user .. " created stop '" .. name .. "' (" .. stopId .. ")")
+    print("[BusStop] " .. user .. " created stop '" .. name .. "' (" .. newStop.id .. ")")
     reply(player, "CreateResult", true, "msg_stop_created", { name })
+end
+
+-- Lazily (re)creates the physical tile for a registered stop when a player
+-- interacts with it. The stop and its coordinate come from the server's own
+-- registry — the client only supplies the stopId — and we require the player to
+-- actually be standing next to it, so this cannot be used to spawn objects
+-- anywhere. Idempotent and cheap: only ever runs on a player's use interaction.
+local function handleEnsureStopTile(player, args)
+    local stop = findStop(args and args.stopId)
+    if not stop then return end
+
+    local px, py = player:getX(), player:getY()
+    local maxD   = BusStop.MAX_USE_DISTANCE
+    if math.floor(player:getZ()) ~= stop.z
+       or distanceSq(px, py, stop.x, stop.y) > maxD * maxD then
+        return
+    end
+
+    spawnStopObject(stop)
 end
 
 local function handleRemoveStop(player, args)
@@ -558,6 +553,7 @@ local HANDLERS = {
     RemoveStop      = handleRemoveStop,
     UpdateStop      = handleUpdateStop,
     RequestStopList = handleRequestStopList,
+    EnsureStopTile  = handleEnsureStopTile,
 }
 
 Events.OnTick.Add(function()
@@ -599,8 +595,7 @@ Events.OnGameTimeLoaded.Add(function()
         print("[BusStop][INIT] stops empty, calling loadStops()")
         loadStops()
     end
-    -- cleanOrphanedStops may remove stops and broadcast internally;
-    -- wrap so a nil getCell() at startup doesn't kill the event.
-    print("[BusStop][INIT] Calling cleanOrphanedStops() via pcall")
-    pcall(cleanOrphanedStops)
+    -- No orphan cleanup: the registry is the source of truth. A stop with no
+    -- physical tile (new world / soft-wiped region) is materialized on demand
+    -- when a player interacts with it (see handleEnsureStopTile / spawnStopObject).
 end)

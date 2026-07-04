@@ -143,21 +143,45 @@ end
 
 -- ── Context menu ─────────────────────────────────────────────────────────────
 
-local function findNearStop(player, worldObjects)
-    for _, obj in ipairs(worldObjects) do
-        local md = obj:getModData()
-        if md and md.busStop then
-            local sq = obj:getSquare()
-            if sq then
-                local dx = math.abs(player:getX() - sq:getX())
-                local dy = math.abs(player:getY() - sq:getY())
-                if dx <= BusStop.MAX_USE_DISTANCE and dy <= BusStop.MAX_USE_DISTANCE then
-                    return obj
-                end
+-- Returns the registered stop located on `sq` (the right-clicked square), but
+-- only when the player is within use distance of it. Detection is keyed off the
+-- synced registry (BusStop.activeStops), so it works even when the tile has not
+-- been spawned yet (new world loaded from an existing config, or a soft-wiped
+-- region). Anchoring to the CLICKED square — not merely the player's proximity —
+-- keeps the option from appearing when the player right-clicks away from the
+-- stop tile, and from lingering after interacting with the stop once.
+-- Player proximity uses the same Euclidean radius the server validates against.
+local function findStopAtSquare(player, sq)
+    if not sq then return nil end
+    local cx, cy, cz = sq:getX(), sq:getY(), sq:getZ()
+    local px, py     = player:getX(), player:getY()
+    local pz         = math.floor(player:getZ())
+    local maxSq      = BusStop.MAX_USE_DISTANCE * BusStop.MAX_USE_DISTANCE
+    for _, s in ipairs(BusStop.activeStops) do
+        if s.x == cx and s.y == cy and s.z == cz then
+            local dx, dy = px - s.x, py - s.y
+            if pz == s.z and (dx * dx + dy * dy) <= maxSq then
+                return s
             end
+            return nil   -- right tile, but the player is too far to use it
         end
     end
     return nil
+end
+
+-- True if the physical bus-stop object for this stop is present on its tile.
+-- Cheap: scans a single gridsquare, and only on a right-click.
+local function stopObjectPresent(stop)
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell then return false end
+    local sq = cell:getGridSquare(stop.x, stop.y, stop.z)
+    if not sq then return false end
+    local objs = sq:getObjects()
+    for i = 0, objs:size() - 1 do
+        local md = objs:get(i):getModData()
+        if md.busStop and md.stopId == stop.id then return true end
+    end
+    return false
 end
 
 local function getTargetSquare(player, worldObjects)
@@ -179,32 +203,39 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects, 
     if not player then return end
 
     local isAdmin  = BusStop.isAdmin(player)
-    local nearStop = findNearStop(player, worldObjects)
+    local targetSq = getTargetSquare(player, worldObjects)
+    local nearStop = findStopAtSquare(player, targetSq)
 
     if nearStop then
-        local md = nearStop:getModData()
+        -- Usage depends only on the registry. If the physical sprite is missing
+        -- (new world / soft-wiped region), lazily ask the server to spawn it —
+        -- only when actually absent, so there is no redundant traffic.
+        if not stopObjectPresent(nearStop) then
+            local ok, err = pcall(function()
+                sendClientCommand(MODULE, "EnsureStopTile", { stopId = nearStop.id })
+            end)
+            if not ok then print("[BusStop] ERROR EnsureStopTile: " .. tostring(err)) end
+        end
         context:addOption(
-            BusStop.getText("ctx_use_stop", md.name or ""),
-            { obj = nearStop, player = player },
+            BusStop.getText("ctx_use_stop", nearStop.displayname or ""),
+            { stop = nearStop, player = player },
             function(data)
                 require "BusStopUI"
-                BusStopUI.open(data.player, data.obj)
+                BusStopUI.open(data.player, data.stop)
             end
         )
     end
 
     if isAdmin then
         if nearStop then
-            local md = nearStop:getModData()
             context:addOption(
                 BusStop.getText("ctx_remove_stop"),
-                { stopId = md.stopId },
+                { stopId = nearStop.id },
                 function(data)
                     sendClientCommand(MODULE, "RemoveStop", { stopId = data.stopId })
                 end
             )
         else
-            local targetSq = getTargetSquare(player, worldObjects)
             if targetSq then
                 context:addOption(
                     BusStop.getText("ctx_build_stop"),

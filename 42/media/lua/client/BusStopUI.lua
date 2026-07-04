@@ -89,17 +89,18 @@ local CLOSE_SZ = px(24)
 local INFO_H   = px(22)
 local BTN_H    = px(40)
 
-function TravelPanel:new(player, stopObj)
+function TravelPanel:new(player, stop)
     local PANEL_W = panelWidth()
     local sw = getCore():getScreenWidth()
     local sh = getCore():getScreenHeight()
 
-    local stopData    = stopObj:getModData()
-    local currentStop = findStopById(stopData.stopId)
+    -- `stop` is the synced registry entry (BusStop.activeStops), not a physical
+    -- world object — usage no longer depends on the tile being spawned.
+    local currentStop = stop
 
     local allDests = {}
     for _, s in ipairs(BusStop.activeStops) do
-        if s.id ~= stopData.stopId and s.available then
+        if s.id ~= stop.id and s.available then
             table.insert(allDests, s)
         end
     end
@@ -136,8 +137,8 @@ function TravelPanel:new(player, stopObj)
         math.max(px(20), math.floor((sh - totalH) / 2)),
         PANEL_W, totalH)
     o.player           = player
-    o.stopObj          = stopObj
-    o.stopData         = stopData
+    o.stop             = stop
+    o.stopId           = stop.id
     o.currentStop      = currentStop
     o.allDests         = allDests
     o.returnDest       = returnDest
@@ -167,7 +168,7 @@ function TravelPanel:createChildren()
     xBtn:initialise(); xBtn:instantiate()
     self:addChild(xBtn)
 
-    self._titleText = BusStop.getText("ui_title", self.stopData.name or "")
+    self._titleText = BusStop.getText("ui_title", self.stop.displayname or "")
     self._titleY    = math.floor((TITLE_H - tm:getFontHeight(UIFont.Medium)) / 2)
 
     local yOff = TITLE_H
@@ -353,7 +354,6 @@ function TravelPanel:onTravelBtnClick()
 end
 
 function TravelPanel:_travel(destId, isReturn)
-    local sq   = self.stopObj:getSquare()
     local dest = findStopById(destId)
 
     if isReturn then
@@ -363,24 +363,25 @@ function TravelPanel:_travel(destId, isReturn)
         BusStop.returnStop = self.currentStop
     end
 
+    -- Origin coordinates come straight from the registry entry; the server
+    -- re-validates proximity against its own copy, so these are advisory only.
     sendClientCommand(MODULE, "RequestTravel", {
-        stopId        = self.stopData.stopId,
+        stopId        = self.stopId,
         destinationId = destId,
-        x             = sq:getX(),
-        y             = sq:getY(),
-        z             = sq:getZ(),
+        x             = self.stop.x,
+        y             = self.stop.y,
+        z             = self.stop.z,
         isReturn      = isReturn or false,
     })
     self:close()
 end
 
 function TravelPanel:_travelRandom()
-    local sq = self.stopObj:getSquare()
     sendClientCommand(MODULE, "RequestTravel", {
-        stopId   = self.stopData.stopId,
-        x        = sq:getX(),
-        y        = sq:getY(),
-        z        = sq:getZ(),
+        stopId   = self.stopId,
+        x        = self.stop.x,
+        y        = self.stop.y,
+        z        = self.stop.z,
         isRandom = true,
     })
     self:close()
@@ -434,11 +435,11 @@ end
 
 -- ── Public API ────────────────────────────────────────────────────────────────
 
-function BusStopUI.open(player, stopObj)
+function BusStopUI.open(player, stop)
     if BusStopUI._current then
         BusStopUI._current:close()
     end
-    local panel = TravelPanel:new(player, stopObj)
+    local panel = TravelPanel:new(player, stop)
     panel:initialise()
     panel:instantiate()
     panel:addToUIManager()
