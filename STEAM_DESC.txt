@@ -131,6 +131,14 @@ Found under [b]Sandbox → Bus Stop Fast Travel[/b]:
 
 [hr][/hr]
 
+[h2]Translations[/h2]
+
+Available in [b]English[/b] and [b]Brazilian Portuguese[/b]. Want the mod in your language? Help is very welcome — it's just two small files and usually takes under an hour. Contributors are credited in this description.
+
+👉 [url=https://steamcommunity.com/workshop/filedetails/discussion/3711522956/561409854000902168/]How to contribute a translation[/url]
+
+[hr][/hr]
+
 [h2]Technical Information[/h2]
 
 [table]
