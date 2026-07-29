@@ -4,4 +4,4 @@ description=Adds admin-placed bus stops that allow controlled fast travel betwee
 modversion=1.0
 author=leozimmelo
 pack=bus
-tiledef=tiledefinitions 8945
+tiledef=tiledefinitions 6849
