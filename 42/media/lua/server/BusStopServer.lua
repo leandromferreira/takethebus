@@ -17,9 +17,15 @@ local function getPlayerData(player)
 end
 
 -- ── File I/O ──────────────────────────────────────────────────────────────────
--- File stored at Zomboid/Lua/BusStopData.lua
+-- File stored at Zomboid/Lua/BusStopData.txt
+-- B42.20 added an extension allowlist to getFileWriter (ini/cfg/txt/log only),
+-- so the save file can no longer use a .lua extension — getFileWriter would
+-- silently return nil and saveStops() would never persist. getFileReader has
+-- no such restriction, so OLD_FILE_NAME below is only ever read (for
+-- migrating saves created before this rename), never written.
 
-local FILE_NAME           = "BusStopData.lua"
+local FILE_NAME           = "BusStopData.txt"
+local OLD_FILE_NAME       = "BusStopData.lua"   -- legacy name, read-only (see above)
 local stops               = {}
 local _rndIdx             = 0   -- round-robin counter for random trips
 local _pendingProtections = {}  -- { {player, expiry}, ... } for arrival protection cleanup
@@ -97,6 +103,14 @@ end
 
 local function loadStops()
     local reader = getFileReader(FILE_NAME, false)
+    local usedOldFile = false
+    if not reader then
+        -- Fall back to the pre-42.20 filename (getFileReader has no extension
+        -- restriction, so this legacy file is still readable even though it
+        -- can no longer be written — see FILE_NAME comment above).
+        reader = getFileReader(OLD_FILE_NAME, false)
+        usedOldFile = reader ~= nil
+    end
     if not reader then
         stops = {}
         print("[BusStop] No save file found — starting with empty stop list")
@@ -115,8 +129,10 @@ local function loadStops()
         line = reader:readLine()
     end
     reader:close()
-    print("[BusStop] Loaded " .. #stops .. " stop(s)" .. (isLua and " (legacy format — migrating)" or ""))
-    if isLua and #stops > 0 then
+    print("[BusStop] Loaded " .. #stops .. " stop(s)"
+        .. (isLua and " (legacy table format — migrating)" or "")
+        .. (usedOldFile and (" (from legacy " .. OLD_FILE_NAME .. " — migrating to " .. FILE_NAME .. ")") or ""))
+    if (isLua or usedOldFile) and #stops > 0 then
         saveStops()
     end
 end
