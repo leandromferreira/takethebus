@@ -14,9 +14,11 @@ local function onServerCommand(module, command, args)
 
     if command == "StopList" then
         BusStop.activeStops = args.stops or {}
-        if BusStopAdminUI and BusStopAdminUI._current then
-            -- admin panel is open; it will refresh on next render
-        end
+        -- Bumped so the admin panel (BusStopAdminUI.lua) can detect the update via
+        -- polling in its own prerender() instead of needing a dedicated event hook —
+        -- works the same whether this arrived via a real OnServerCommand or via the
+        -- true-solo ModData relay poller below.
+        BusStop._activeStopsVersion = (BusStop._activeStopsVersion or 0) + 1
 
     elseif command == "ReturnTripSync" then
         -- Server is authoritative: resolve stopId to a live stop object.
@@ -74,6 +76,39 @@ local function onServerCommand(module, command, args)
 end
 
 Events.OnServerCommand.Add(onServerCommand)
+
+-- ── Solo-mode relay poller ────────────────────────────────────────────────────
+-- sendServerCommand's engine binding never reaches the client in true
+-- single-player (isServer() and isClient() are both false there, and unlike
+-- sendClientCommand it has no SinglePlayerServer fallback) — so OnServerCommand
+-- never fires and BusStop.activeStops never populates, TeleportTo never
+-- arrives, etc. BusStopServer.lua detects this and relays through a ModData
+-- queue instead (ModData.add/get are a plain shared Java map, no network
+-- round-trip needed). Drain that queue here and replay each entry through the
+-- exact same dispatch used for a real OnServerCommand. No-op in real MP.
+local SOLO_QUEUE_TAG = "BusStopSoloQueue"
+
+local function isTrueSolo()
+    return not isServer() and not isClient()
+end
+
+local function pollSoloQueue()
+    if not isTrueSolo() then return end
+    local q = ModData.get(SOLO_QUEUE_TAG)
+    if not q then return end
+    while #q > 0 do
+        local entry = q[1]
+        table.remove(q, 1)
+        if entry and entry.command then
+            local ok, err = pcall(onServerCommand, MODULE, entry.command, entry.args)
+            if not ok then
+                print("[BusStop] ERROR solo relay dispatch '" .. tostring(entry.command) .. "': " .. tostring(err))
+            end
+        end
+    end
+end
+
+Events.OnTick.Add(pollSoloQueue)
 
 -- ── Request stop list on join ─────────────────────────────────────────────────
 -- sendClientCommand sent at frame 1 is discarded by the server because the

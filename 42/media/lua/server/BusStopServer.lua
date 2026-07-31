@@ -144,6 +144,50 @@ local function findStop(stopId)
     return nil, nil
 end
 
+-- ── Solo-mode command relay ──────────────────────────────────────────────────
+-- sendServerCommand's engine binding only ever dispatches through GameServer
+-- (guarded by isServer()) — unlike sendClientCommand, it has no fallback to
+-- SinglePlayerServer for true single-player. isServer() and isClient() are
+-- BOTH false in true single-player (they're true only for a real dedicated
+-- server / a real network connection respectively), so on a fresh solo game
+-- sendServerCommand is a silent no-op: OnServerCommand never fires client-side.
+-- This breaks everything server->client: StopList sync, TeleportTo, return
+-- trip sync, and all halo-text replies.
+-- Workaround: ModData is a single Java-side map regardless of client/server
+-- Lua context, so add()/get() need no network round-trip at all. In true solo
+-- we relay through a ModData queue instead of sendServerCommand; the client
+-- polls and drains it (see BusStopClient.lua). Real MP is untouched — it still
+-- goes through sendServerCommand exactly as before.
+local SOLO_QUEUE_TAG = "BusStopSoloQueue"
+
+local function isTrueSolo()
+    return not isServer() and not isClient()
+end
+
+-- player is ignored in the solo path: true solo only ever has the one local
+-- player, and the client-side poller doesn't need to address it.
+--
+-- IMPORTANT: sendServerCommand(module, command, args) [3 args, broadcast to
+-- everyone] and sendServerCommand(player, module, command, args) [4 args,
+-- targeted] are two DIFFERENT Java overloads, resolved by argument count —
+-- calling the 4-arg form with player=nil is NOT the same as calling the 3-arg
+-- form; it does not broadcast. Passing player=nil here must call the 3-arg
+-- broadcast overload, not the 4-arg one with a nil player.
+local function serverSend(player, command, args)
+    if isTrueSolo() then
+        local ok, q = pcall(ModData.getOrCreate, SOLO_QUEUE_TAG)
+        if ok and q then
+            table.insert(q, { command = command, args = args or {} })
+        else
+            print("[BusStop] ERROR serverSend: ModData.getOrCreate failed for '" .. command .. "'")
+        end
+    elseif player then
+        sendServerCommand(player, MODULE, command, args)
+    else
+        sendServerCommand(MODULE, command, args)
+    end
+end
+
 -- ── Broadcast ─────────────────────────────────────────────────────────────────
 
 -- Broadcast the full stop list to all connected clients.
@@ -151,15 +195,15 @@ end
 local function broadcastStopList()
     local _, mdErr = pcall(function() ModData.add("BusStopData", stops) end)
     if mdErr then print("[BusStop] ERROR broadcastStopList ModData.add: " .. tostring(mdErr)) end
-    local _, cmdErr = pcall(function() sendServerCommand(MODULE, "StopList", { stops = stops }) end)
-    if cmdErr then print("[BusStop] ERROR broadcastStopList sendServerCommand: " .. tostring(cmdErr)) end
+    local _, cmdErr = pcall(function() serverSend(nil, "StopList", { stops = stops }) end)
+    if cmdErr then print("[BusStop] ERROR broadcastStopList serverSend: " .. tostring(cmdErr)) end
 end
 
 -- ── Helpers ───────────────────────────────────────────────────────────────────
 
 -- msgKey: translation key; msgArgs: optional array of format args for the client.
 local function reply(player, command, ok, msgKey, msgArgs)
-    sendServerCommand(player, MODULE, command, {
+    serverSend(player, command, {
         ok      = ok,
         msgKey  = msgKey,
         msgArgs = msgArgs,
@@ -187,6 +231,14 @@ local function hasNearbyZombies(player)
 end
 
 local function playerIsAdmin(player)
+    -- True single-player (not hosted, not dedicated) never goes through the
+    -- whitelist/role system, so getAccessLevel() never returns "admin" there
+    -- even for the local host. isServer() is true only on a real dedicated
+    -- server; isClient() is true only for a real network connection (Host or
+    -- Join). Both are false only in true single-player, so this bypass can't
+    -- be reached on an actual multi-user server. Mirrors the client-side
+    -- bypass in BusStop.isAdmin (BusStopShared.lua).
+    if not isServer() and not isClient() then return true end
     local level = string.lower(player:getAccessLevel() or "")
     return level == "admin" or level == "moderator"
 end
@@ -359,19 +411,19 @@ local function handleRequestTravel(player, args)
     local pData = getPlayerData(player)
     if isReturn then
         pData.returnTrip = nil
-        sendServerCommand(player, MODULE, "ReturnTripSync", { cleared = true })
+        serverSend(player, "ReturnTripSync", { cleared = true })
     elseif dest.rememberreturn then
         local sv2b   = SandboxVars.BusStop or {}
         local hours  = sv2b.ReturnTripHours or 24
         local gt     = getGameTime()
         local expiry = gt and (gt:getWorldAgeHours() + hours) or 999999
         pData.returnTrip = { stopId = stopId, expiryHours = expiry }
-        sendServerCommand(player, MODULE, "ReturnTripSync", { returnTrip = pData.returnTrip })
+        serverSend(player, "ReturnTripSync", { returnTrip = pData.returnTrip })
     end
 
     print("[BusStop] " .. user .. " traveled to '" .. dest.displayname .. "'"
         .. (isRandom and " (random)" or ""))
-    sendServerCommand(player, MODULE, "TeleportTo", { x = dest.x, y = dest.y, z = dest.z })
+    serverSend(player, "TeleportTo", { x = dest.x, y = dest.y, z = dest.z })
 
     -- Arrival protection: applied server-side so zombie AI (which runs on the server)
     -- actually respects the flag. Client-side calls on a non-admin player are ignored.
@@ -538,7 +590,7 @@ end
 
 local function handleRequestStopList(player, _)
     local _, err = pcall(function()
-        sendServerCommand(player, MODULE, "StopList", { stops = stops })
+        serverSend(player, "StopList", { stops = stops })
     end)
     if err then print("[BusStop] ERROR StopList send: " .. tostring(err)) end
 
@@ -556,7 +608,7 @@ local function handleRequestStopList(player, _)
         and { returnTrip = pData.returnTrip }
         or  { cleared = true }
     local _, rtErr = pcall(function()
-        sendServerCommand(player, MODULE, "ReturnTripSync", payload)
+        serverSend(player, "ReturnTripSync", payload)
     end)
     if rtErr then print("[BusStop] ERROR ReturnTripSync send: " .. tostring(rtErr)) end
 end

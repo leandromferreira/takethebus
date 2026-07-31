@@ -247,6 +247,15 @@ function AdminPanel:prerender()
             self:buildLayout()
         end
     end
+    -- Refresh when a new StopList has been processed, however it arrived (real
+    -- OnServerCommand, or the true-solo ModData relay poller in
+    -- BusStopClient.lua, which doesn't fire this file's own OnServerCommand
+    -- listener). BusStop._activeStopsVersion is bumped in BusStopClient.lua's
+    -- onServerCommand every time BusStop.activeStops is reassigned.
+    if BusStop._activeStopsVersion ~= self._lastStopsVersion then
+        self._lastStopsVersion = BusStop._activeStopsVersion
+        self:refreshList(BusStop.activeStops)
+    end
 end
 
 -- ── Button factories ──────────────────────────────────────────────────────────
@@ -465,15 +474,6 @@ function BusStopAdminUI.open()
     BusStopAdminUI._current = panel
 end
 
--- Refresh list whenever server broadcasts an updated stop list.
--- Pass args.stops directly so we don't depend on BusStopClient having updated
--- BusStop.activeStops first (handler order is not guaranteed).
-Events.OnServerCommand.Add(function(module, command, args)
-    if module == MODULE and command == "StopList" and BusStopAdminUI._current then
-        BusStop.activeStops = args.stops or {}
-        BusStopAdminUI._current:refreshList(BusStop.activeStops)
-    end
-end)
 
 -- ── Inject button into vanilla admin panel (F2) ───────────────────────────────
 
