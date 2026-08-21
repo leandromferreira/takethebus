@@ -1,164 +1,96 @@
 [h1][B42] Bus Stop Fast Travel[/h1]
 
-Adds admin-placed bus stops to any server. Players walk up to a stop, pick a destination, pay the fare, and are teleported with a cinematic fade transition. Fully server-authoritative — admins control every stop, price, and route.
+Adds admin-placed bus stops to any server. Players walk up, pick a destination, pay the fare, and get teleported with a fade transition. Fully server-authoritative.
 
 [hr][/hr]
 
 [h2]How It Works[/h2]
 
-[h3]For Players[/h3]
-[list]
-[*]Walk within range of a bus stop
-[*]Right-click → [b]Use bus stop: [name][/b]
-[*]The travel panel opens — search or scroll through available destinations
-[*]Click a stop to select it and preview the fare, then click [b]Travel to [name][/b] to confirm
-[*]The screen fades to black, you are teleported, and the screen fades back in
-[*]If the destination has [b]Return Trip[/b] enabled, a return button appears on your next visit
-[*]A [b]Random Trip[/b] button sends you to a surprise destination (if enabled by the server)
-[/list]
+[b]Players:[/b] walk up to a stop, right-click and choose [b]Use bus stop[/b], pick a destination in the travel panel, then confirm to travel. Screen fades out, you're teleported, fades back in. Destinations with [b]Return Trip[/b] get a free one-click return on your next visit; [b]Random Trip[/b] sends you somewhere random if enabled. Holding a [b]Bus Ticket[/b] item pays for the trip for free (consumed on use) at any stop that accepts it.
 
-[h3]For Admins[/h3]
-[list]
-[*]Right-click any tile → [b]Build bus stop here[/b] → enter a name
-[*]Right-click near an existing stop → [b]Remove bus stop[/b]
-[*]Right-click anywhere → [b]Manage bus stops[/b] to open the full admin panel
-[/list]
+[b]Admins:[/b] right-click any tile to [b]Build bus stop here[/b], right-click a stop to [b]Remove[/b] it, or right-click anywhere to open [b]Manage bus stops[/b] for the full admin panel.
 
 [hr][/hr]
 
 [h2]Features[/h2]
 
-[b]Travel Panel[/b]
 [list]
-[*]Search bar to filter destinations by name
-[*]Scrollable list — works with any number of stops without clipping the screen
-[*]Select-then-confirm flow — click a stop to preview name and fare, then confirm travel; no accidental trips
-[*][b]Random Trip[/b] button — server picks a surprise destination; configurable price and optional toggle
-[/list]
-
-[b]Travel System[/b]
-[list]
-[*]Teleportation with full-screen fade to black and fade back
-[*]Bus arrival and departure sound effects during the transition
-[*]Arrival protection — zombies won't attack you for a few seconds after landing
-[*]Countdown HUD showing remaining protection time
-[*]Per-player sound volume preference: Off / Low / Medium / High, cycled from the travel panel
-[/list]
-
-[b]Stop Configuration[/b]
-[list]
-[*][b]Free[/b] — no cost to travel
-[*][b]Fixed[/b] — flat fare multiplied by the stop's price multiplier
-[*][b]Dynamic[/b] — fare calculated by distance, scaled by base price, price-per-tile, and multiplier
-[*][b]Available toggle[/b] — disable a stop without deleting it; hidden from players and unavailable as a destination
-[*][b]Return Trip[/b] — when enabled, traveling to this stop remembers your origin so you can return in one click without cost
-[/list]
-
-[b]Economy Integration[/b]
-[list]
-[*]By default fares are paid with an inventory item (Base.Money or any custom item)
-[*]Bank mods can integrate as the payment backend by exposing a simple 3-function Lua API
-[*]Items and bank can be active simultaneously — items are deducted first, bank covers any shortfall
-[*]Includes a ready-made bridge example for [b]Survivor Shop[/b]
-[*][url=https://steamcommunity.com/workshop/filedetails/discussion/3711522956/809100989726475391/]Full integration guide and API reference[/url]
-[/list]
-
-[b]Admin Panel[/b]
-[list]
-[*]Lists all stops with their coordinates, price type, multiplier, and status
-[*]Edit any field inline and save
-[*][b]Go To[/b] — teleports the admin directly to a stop
-[*][b]Delete Stop[/b] — removes the stop from the registry immediately
-[/list]
-
-[b]Map Markers[/b]
-[list]
-[*]Every active stop appears as an icon on the in-game map
-[*]Click a marker to see the stop name
-[/list]
-
-[b]Persistence & Wipe-Proof[/b]
-[list]
-[*]Stops are saved to a server config file that carries across worlds — set up your route once and reuse it on every new save
-[*]Starting a fresh world or soft-wiping a region never loses a stop: the bus stop tile is recreated automatically the moment a player walks up to it and uses it
-[*]The stop registry is the single source of truth — a missing tile can no longer make a stop disappear from the map or become unusable
+[*][b]Travel panel[/b] — searchable, scrollable destination list; select then confirm, no accidental trips
+[*][b]Random Trip[/b] — configurable price, optional toggle
+[*][b]Fade transition[/b] — full-screen fade with bus sound effects, adjustable volume
+[*][b]Arrival protection[/b] — brief zombie immunity with a countdown HUD after teleporting
+[*][b]Pricing[/b] — Free, Fixed, or Dynamic (distance-based) fares, with a per-stop multiplier
+[*][b]Economy[/b] — pay with an inventory item, a bank mod (simple 3-function API), or both; includes a Survivor Shop bridge example
+[*][b]Bus Ticket item[/b] — findable in schools, offices, houses, and on zombies; pays for one trip free; each stop can accept or reject it; fully configurable via sandbox
+[*][b]Admin panel[/b] — edit any stop's fields inline, teleport to it, or delete it
+[*][b]Map markers[/b] — every active stop shown as an icon on the map
+[*][b]Wipe-proof[/b] — stops survive new worlds and soft-wipes; the stop registry is the source of truth, tiles rebuild automatically on first use
 [/list]
 
 [hr][/hr]
 
-[h2]Stop Options Reference[/h2]
+[h2]Stop Options[/h2]
 
 [table]
 [tr][th]Field[/th][th]Description[/th][/tr]
-[tr][td]Display Name[/td][td]The name shown in menus and on the map[/td][/tr]
-[tr][td]Price Type[/td][td]Free · Fixed · Dynamic[/td][/tr]
-[tr][td]Price Multiplier[/td][td]Scales the calculated fare for this stop (e.g. 2.0 = double price)[/td][/tr]
-[tr][td]Available[/td][td]Yes/No — disabled stops are invisible to players[/td][/tr]
-[tr][td]Return Trip[/td][td]Yes/No — enables the one-click return button after arrival[/td][/tr]
+[tr][td]Display Name[/td][td]Shown in menus and on the map[/td][/tr]
+[tr][td]Price Type[/td][td]Free, Fixed, or Dynamic[/td][/tr]
+[tr][td]Price Multiplier[/td][td]Scales the fare (2.0 = double)[/td][/tr]
+[tr][td]Available[/td][td]Yes/No — hidden from players when off[/td][/tr]
+[tr][td]Return Trip[/td][td]Yes/No — free one-click return after arrival[/td][/tr]
+[tr][td]Accept Bus Ticket[/td][td]Yes/No — whether a ticket item works here[/td][/tr]
 [/table]
 
 [hr][/hr]
 
 [h2]Sandbox Options[/h2]
 
-Found under [b]Sandbox → Bus Stop Fast Travel[/b]:
+Under [b]Sandbox: Bus Stop Fast Travel[/b]
 
 [table]
 [tr][th]Option[/th][th]Default[/th][th]Description[/th][/tr]
-[tr][td]Pay with Items[/td][td]Yes[/td][td]Deduct fares from inventory. When both sources are active, items are charged first.[/td][/tr]
-[tr][td]Pay with Bank[/td][td]No[/td][td]Deduct fares via a bank mod API. Covers any shortfall left by items.[/td][/tr]
-[tr][td]Bank Mod Global[/td][td](empty)[/td][td]Lua global name the bank mod exposes its API under. Required when Pay with Bank is enabled.[/td][/tr]
-[tr][td]Currency Item[/td][td]Base.Money[/td][td]The item players pay with. Only used when Pay with Items is enabled.[/td][/tr]
-[tr][td]Base Price[/td][td]1[/td][td]Minimum fare applied to every trip.[/td][/tr]
-[tr][td]Price Per Tile[/td][td]1[/td][td]Extra cost per tile of distance (÷1000) used in Dynamic pricing.[/td][/tr]
-[tr][td]Enable Random Trip[/td][td]Yes[/td][td]Show the Random Trip button in the travel panel.[/td][/tr]
-[tr][td]Random Trip Price[/td][td]0[/td][td]Flat fare charged for a random trip. 0 = free.[/td][/tr]
-[tr][td]Return Trip Duration[/td][td]24[/td][td]How many in-game hours a return ticket stays valid after arrival. In-game hours — advance based on the server's time speed multiplier.[/td][/tr]
+[tr][td]Pay with Items[/td][td]Yes[/td][td]Deduct from inventory; charged first if both sources are on[/td][/tr]
+[tr][td]Pay with Bank[/td][td]No[/td][td]Deduct via a bank mod API; covers any shortfall[/td][/tr]
+[tr][td]Bank Mod Global[/td][td](empty)[/td][td]Bank mod's Lua global name; required for Pay with Bank[/td][/tr]
+[tr][td]Currency Item[/td][td]Base.Money[/td][td]Item used for Pay with Items[/td][/tr]
+[tr][td]Base Price[/td][td]1[/td][td]Minimum fare on every trip[/td][/tr]
+[tr][td]Price Per Tile[/td][td]1[/td][td]Extra cost per tile (divided by 1000), Dynamic pricing only[/td][/tr]
+[tr][td]Enable Random Trip[/td][td]Yes[/td][td]Show the Random Trip button[/td][/tr]
+[tr][td]Random Trip Price[/td][td]0[/td][td]Flat fare for a random trip[/td][/tr]
+[tr][td]Return Trip Duration[/td][td]24[/td][td]In-game hours a return ticket stays valid[/td][/tr]
+[tr][td]Enable Bus Ticket Item[/td][td]Yes[/td][td]Master switch for the ticket mechanic[/td][/tr]
+[tr][td]Ticket Item[/td][td]BusStop.BusTicket[/td][td]Item type recognized as a free fare[/td][/tr]
+[tr][td]Spawn Ticket in Buildings[/td][td]Yes[/td][td]Add it to school/office/house loot[/td][/tr]
+[tr][td]Ticket Building Spawn Rate[/td][td]2[/td][td]Chance weight in building loot[/td][/tr]
+[tr][td]Spawn Ticket on Zombies[/td][td]Yes[/td][td]Add it to zombie corpse loot[/td][/tr]
+[tr][td]Ticket Zombie Spawn Rate[/td][td]1[/td][td]Chance weight in zombie loot[/td][/tr]
 [/table]
 
-[b]Dynamic Price Formula:[/b] [i]ceil( (BasePrice + distance × (PricePerTile ÷ 1000)) × stop_multiplier )[/i]
+[i]Dynamic price = ceil( (BasePrice + distance x PricePerTile / 1000) x stop multiplier )[/i]
 
 [hr][/hr]
 
-[h2]Short FAQ[/h2]
-
-[b]Game version:[/b] B42 (Unstable or later)
-[b]Multiplayer:[/b] Yes — fully server-authoritative
-[b]Singleplayer:[/b] Yes
-[b]Added mid-game:[/b] Yes — existing saves are not affected
-[b]Who can manage stops:[/b] Admin and Moderator access levels only
-[b]Where is data saved:[/b] [i]~/Zomboid/Lua/BusStopData.lua[/i] on the server
+[b]Build:[/b] 42+   [b]Multiplayer:[/b] Yes (server-authoritative)   [b]Singleplayer:[/b] Yes   [b]Safe to add mid-game:[/b] Yes   [b]Manage permission:[/b] Admin/Moderator   [b]Save file:[/b] ~/Zomboid/Lua/BusStopData.txt
 
 [hr][/hr]
 
 [h2]Translations[/h2]
 
-Available in [b]English[/b] and [b]Brazilian Portuguese[/b]. Want the mod in your language? Help is very welcome — it's just two small files and usually takes under an hour. Contributors are credited in this description.
-
-👉 [url=https://steamcommunity.com/workshop/filedetails/discussion/3711522956/561409854000902168/]How to contribute a translation[/url]
+Available in [b]English[/b] and [b]Brazilian Portuguese[/b]. Want to add your language? It's two small files, usually under an hour: [url=https://steamcommunity.com/workshop/filedetails/discussion/3711522956/561409854000902168/]contributor guide here[/url]. Contributors are credited in this description.
 
 [hr][/hr]
-
-[h2]Technical Information[/h2]
 
 [table]
 [tr][td]Mod ID[/td][td]BusStopFastTravel[/td][/tr]
 [tr][td]Version[/td][td]1.1[/td][/tr]
-[tr][td]Build[/td][td]42+[/td][/tr]
 [/table]
 
 [hr][/hr]
-[hr][/hr]
-[h2]Permissions for Modders[/h2]
 
-[b]Ask for permission.[/b]
+[h2]Permissions[/h2]
 
-This mod may [b]not[/b] be included in modpacks, collections distributed as a single download, or any form of redistribution without the express permission of the original creator. Extensions and patches are also subject to this restriction. Having received permission, credit must be given to the original creator both within the mod files and wherever the mod is published online.
+[b]Ask for permission.[/b] Not to be included in modpacks, collections, or any redistribution without express permission. Credit required if permission is granted.
 
 [hr][/hr]
 
-[h2]Copyright[/h2]
-
-[b]Copyright 2026 Leandro Ferreira.[/b] This item is not authorized for posting on Steam, except under the Steam account named leozimmelo.
-
-All rights reserved. This mod may not be reuploaded, mirrored, or included in modpacks or collections distributed as a single download without the express written permission of the original creator.
+[b]Copyright 2026 Leandro Ferreira.[/b] Not authorized for posting on Steam except under the account leozimmelo. All rights reserved.
