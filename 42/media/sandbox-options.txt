@@ -119,7 +119,7 @@ option BusStop.SpawnTicketInBuildings
 option BusStop.TicketBuildingSpawnRate
 {
     type = integer,
-    default = 5,
+    default = 2,
     min = 0,
     max = 100,
     page = BusStop,
@@ -139,7 +139,7 @@ option BusStop.SpawnTicketOnZombies
 option BusStop.TicketZombieSpawnRate
 {
     type = integer,
-    default = 3,
+    default = 1,
     min = 0,
     max = 100,
     page = BusStop,
