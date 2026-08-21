@@ -53,6 +53,32 @@ function BusStop.priceLabel(fromX, fromY, dest)
     return tostring(price) .. "x " .. name
 end
 
+-- ── Bus Ticket item ───────────────────────────────────────────────────────────
+-- A held Ticket Item pays for a trip for free (and is consumed) at any stop
+-- that accepts it. Shared so both the travel panel's price label (client) and
+-- the actual consumption in handleRequestTravel (server) agree on the rule.
+
+function BusStop.countTicket(player)
+    local sv = SandboxVars.BusStop or {}
+    if sv.EnableTicketItem == false then return 0 end
+    local itemType = sv.TicketItem or "BusStop.BusTicket"
+    local inv   = player:getInventory()
+    local items = inv:getItems()
+    local count = 0
+    for i = 0, items:size() - 1 do
+        if items:get(i):getFullType() == itemType then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+-- True if `player` holds a ticket and `dest` accepts it (accepttickets ~= false).
+function BusStop.ticketAppliesTo(player, dest)
+    if not dest or dest.accepttickets == false then return false end
+    return BusStop.countTicket(player) > 0
+end
+
 -- ── Admin check ───────────────────────────────────────────────────────────────
 
 function BusStop.isAdmin(player)

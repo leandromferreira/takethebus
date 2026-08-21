@@ -17,5 +17,17 @@
     "Sandbox_BusStop_RandomTripPrice":               "Preço da Viagem Aleatória",
     "Sandbox_BusStop_RandomTripPrice_tooltip":       "Valor cobrado quando o jogador usa o botão de Viagem Aleatória. 0 = gratuito.",
     "Sandbox_BusStop_ReturnTripHours":               "Duração da Viagem de Retorno (horas)",
-    "Sandbox_BusStop_ReturnTripHours_tooltip":       "Quantas horas de jogo o bilhete de retorno permanece válido após viajar para um destino. São horas in-game, não tempo real — avançam conforme o multiplicador de velocidade do tempo do servidor. O padrão é 24 horas in-game."
+    "Sandbox_BusStop_ReturnTripHours_tooltip":       "Quantas horas de jogo o bilhete de retorno permanece válido após viajar para um destino. São horas in-game, não tempo real — avançam conforme o multiplicador de velocidade do tempo do servidor. O padrão é 24 horas in-game.",
+    "Sandbox_BusStop_EnableTicketItem":              "Habilitar Item Passagem",
+    "Sandbox_BusStop_EnableTicketItem_tooltip":      "Quando ativo, ter um Item Passagem no inventário paga a viagem de graça (consumindo um) em qualquer parada que aceite. Quando desativado, o item não tem efeito mesmo se o jogador tiver um.",
+    "Sandbox_BusStop_TicketItem":                    "Item Passagem",
+    "Sandbox_BusStop_TicketItem_tooltip":            "Tipo de item usado como passagem grátis (ex: BusStop.BusTicket). Usado apenas quando Habilitar Item Passagem está ativo.",
+    "Sandbox_BusStop_SpawnTicketInBuildings":          "Item Aparece em Construções",
+    "Sandbox_BusStop_SpawnTicketInBuildings_tooltip":  "Quando ativo, o Item Passagem é adicionado às distribuições de loot de construções (escolas, escritórios, casas), podendo ser encontrado explorando.",
+    "Sandbox_BusStop_TicketBuildingSpawnRate":         "Chance de Aparecer em Construções",
+    "Sandbox_BusStop_TicketBuildingSpawnRate_tooltip": "Peso de chance relativo usado ao adicionar o Item Passagem nos contêineres de loot de construções. Maior = mais comum. Usado apenas quando Item Aparece em Construções está ativo.",
+    "Sandbox_BusStop_SpawnTicketOnZombies":            "Item Aparece em Zumbis",
+    "Sandbox_BusStop_SpawnTicketOnZombies_tooltip":    "Quando ativo, o Item Passagem é adicionado ao loot de zumbis (qualquer zumbi, além de algumas roupas de trabalhadores/estudantes), podendo ser encontrado ao saquear zumbis.",
+    "Sandbox_BusStop_TicketZombieSpawnRate":           "Chance de Aparecer em Zumbis",
+    "Sandbox_BusStop_TicketZombieSpawnRate_tooltip":   "Peso de chance relativo usado ao adicionar o Item Passagem no loot de zumbis. Maior = mais comum. Usado apenas quando Item Aparece em Zumbis está ativo."
 }

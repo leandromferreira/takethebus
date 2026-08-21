@@ -28,6 +28,7 @@ local TIP_KEYS = {
     free     = "tip_free",    fixed    = "tip_fixed",   dynamic  = "tip_dynamic",
     availYes = "tip_avail_yes", availNo = "tip_avail_no",
     rrYes    = "tip_rr_yes",  rrNo     = "tip_rr_no",
+    ticketYes = "tip_ticket_yes", ticketNo = "tip_ticket_no",
     save     = "tip_save",    delete   = "tip_delete",  goto_btn = "tip_goto",
 }
 
@@ -185,6 +186,14 @@ function AdminPanel:buildLayout()
     addTip(FIELD_X + halfW + GAP, y, FIELD_W - halfW - GAP,    ROW_H, "rrNo")
     y = y + ROW_H + PADDING
 
+    -- Accept Bus Ticket — 2 equal buttons.
+    addLabel(BusStop.getText("adm_accept_tickets"), y)
+    self.btnTicketYes = self:makeTicketBtn(BusStop.getText("adm_yes"), true,  FIELD_X,               y, halfW)
+    self.btnTicketNo  = self:makeTicketBtn(BusStop.getText("adm_no"),  false, FIELD_X + halfW + GAP, y, FIELD_W - halfW - GAP)
+    addTip(FIELD_X,               y, halfW,                    ROW_H, "ticketYes")
+    addTip(FIELD_X + halfW + GAP, y, FIELD_W - halfW - GAP,    ROW_H, "ticketNo")
+    y = y + ROW_H + PADDING
+
     -- ── Footer — 3 buttons distributed across the form area ──
     local footerY  = H - FOOTER_H + PADDING
     local formW    = W - FORM_X - PADDING
@@ -281,6 +290,13 @@ function AdminPanel:makeRRBtn(label, val, x, y, w)
     return btn
 end
 
+function AdminPanel:makeTicketBtn(label, val, x, y, w)
+    local ROW_H = px(28)
+    local btn = ISButton:new(x, y, w, ROW_H, label, self, function() self:onAcceptTickets(val) end)
+    btn:initialise(); btn:instantiate(); self:addChild(btn)
+    return btn
+end
+
 -- ── Highlight helpers ─────────────────────────────────────────────────────────
 
 local function hi(btn, active)
@@ -308,9 +324,16 @@ function AdminPanel:setRememberReturn(val)
     hi(self.btnRRNo,  val == false)
 end
 
+function AdminPanel:setAcceptTickets(val)
+    self.acceptTicketsVal = val
+    hi(self.btnTicketYes, val == true)
+    hi(self.btnTicketNo,  val == false)
+end
+
 function AdminPanel:onPriceType(pt)    self:setPriceType(pt) end
 function AdminPanel:onAvailable(val)   self:setAvailable(val) end
 function AdminPanel:onRememberReturn(v) self:setRememberReturn(v) end
+function AdminPanel:onAcceptTickets(v)  self:setAcceptTickets(v) end
 
 function AdminPanel:setFormEnabled(enabled)
     self.fieldName:setEditable(enabled)
@@ -318,7 +341,8 @@ function AdminPanel:setFormEnabled(enabled)
     for _, b in ipairs({ self.btnSave, self.btnDelete, self.btnGoto,
                          self.btnFree, self.btnFixed, self.btnDynamic,
                          self.btnAvailYes, self.btnAvailNo,
-                         self.btnRRYes, self.btnRRNo }) do
+                         self.btnRRYes, self.btnRRNo,
+                         self.btnTicketYes, self.btnTicketNo }) do
         b:setEnable(enabled)
     end
 end
@@ -346,6 +370,7 @@ function AdminPanel:onSelectStop(s)
     self:setPriceType(s.pricetype or "dynamic")
     self:setAvailable(s.available ~= false)
     self:setRememberReturn(s.rememberreturn == true)
+    self:setAcceptTickets(s.accepttickets ~= false)
 end
 
 function AdminPanel:onSave()
@@ -360,6 +385,7 @@ function AdminPanel:onSave()
         price_multiplier = tonumber(self.fieldMult:getText()) or 1.0,
         available        = (self.availableVal ~= false),
         rememberreturn   = (self.rememberReturnVal == true),
+        accepttickets    = (self.acceptTicketsVal ~= false),
     })
 end
 

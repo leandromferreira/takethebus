@@ -1,0 +1,10 @@
+module BusStop
+{
+    item BusTicket
+    {
+        Type = Normal,
+        DisplayName = Bus Ticket,
+        Icon = ParkingTicket,
+        Weight = 0.1,
+    }
+}

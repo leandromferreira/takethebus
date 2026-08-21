@@ -319,7 +319,9 @@ function TravelPanel:_filterList(filter)
     for _, dest in ipairs(self.allDests) do
         local name = dest.displayname or ""
         if lf == "" or string.find(string.lower(name), lf, 1, true) then
-            local priceStr = BusStop.priceLabel(px_p, py_p, dest)
+            local priceStr = BusStop.ticketAppliesTo(self.player, dest)
+                and BusStop.getText("ui_free_ticket_label")
+                or  BusStop.priceLabel(px_p, py_p, dest)
             list:addItem(name, { name = name, destId = dest.id, priceStr = priceStr })
             if dest.id == self._selectedDestId then selStillVisible = true end
             count = count + 1

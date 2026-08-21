@@ -88,3 +88,61 @@ option BusStop.ReturnTripHours
     translation = BusStop_ReturnTripHours,
     tooltip = BusStop_ReturnTripHours_tooltip,
 }
+
+option BusStop.EnableTicketItem
+{
+    type = boolean,
+    default = true,
+    page = BusStop,
+    translation = BusStop_EnableTicketItem,
+    tooltip = BusStop_EnableTicketItem_tooltip,
+}
+
+option BusStop.TicketItem
+{
+    type = string,
+    default = BusStop.BusTicket,
+    page = BusStop,
+    translation = BusStop_TicketItem,
+    tooltip = BusStop_TicketItem_tooltip,
+}
+
+option BusStop.SpawnTicketInBuildings
+{
+    type = boolean,
+    default = true,
+    page = BusStop,
+    translation = BusStop_SpawnTicketInBuildings,
+    tooltip = BusStop_SpawnTicketInBuildings_tooltip,
+}
+
+option BusStop.TicketBuildingSpawnRate
+{
+    type = integer,
+    default = 5,
+    min = 0,
+    max = 100,
+    page = BusStop,
+    translation = BusStop_TicketBuildingSpawnRate,
+    tooltip = BusStop_TicketBuildingSpawnRate_tooltip,
+}
+
+option BusStop.SpawnTicketOnZombies
+{
+    type = boolean,
+    default = true,
+    page = BusStop,
+    translation = BusStop_SpawnTicketOnZombies,
+    tooltip = BusStop_SpawnTicketOnZombies_tooltip,
+}
+
+option BusStop.TicketZombieSpawnRate
+{
+    type = integer,
+    default = 3,
+    min = 0,
+    max = 100,
+    page = BusStop,
+    translation = BusStop_TicketZombieSpawnRate,
+    tooltip = BusStop_TicketZombieSpawnRate_tooltip,
+}

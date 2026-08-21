@@ -52,6 +52,7 @@ local function saveStops()
             tostring(tonumber(s.price_multiplier) or 1.0),
             tostring(s.available ~= false),
             tostring(s.rememberreturn == true),
+            tostring(s.accepttickets ~= false),
         }, SEP)
         local ok, err = pcall(function() writer:write(line .. "\n") end)
         if not ok then
@@ -68,7 +69,7 @@ local function parseTSVLine(line)
         table.insert(parts, field)
     end
     if #parts < 9 then
-        print("[BusStop][LOAD]   SKIP TSV line (only " .. #parts .. " fields, need 9): " .. line)
+        print("[BusStop][LOAD]   SKIP TSV line (only " .. #parts .. " fields, need at least 9): " .. line)
         return nil
     end
     return {
@@ -81,6 +82,9 @@ local function parseTSVLine(line)
         price_multiplier = tonumber(parts[7]) or 1.0,
         available        = parts[8] == "true",
         rememberreturn   = parts[9] == "true",
+        -- Field 10 (accepttickets) was added after the initial release; older
+        -- save lines only have 9 fields, so default to true (accept) when absent.
+        accepttickets    = parts[10] == nil or parts[10] == "true",
     }
 end
 
@@ -98,6 +102,7 @@ local function parseLuaLine(line)
         price_multiplier = tonumber(line:match('price_multiplier=([%d%.]+)')) or 1.0,
         available        = line:match('available=(%a+)') == "true",
         rememberreturn   = line:match('rememberreturn=(%a+)') == "true",
+        accepttickets    = line:match('accepttickets=(%a+)') ~= "false",
     }
 end
 
@@ -398,6 +403,19 @@ local function handleRequestTravel(player, args)
         price = isFree and 0 or BusStop.calcPrice(px, py, dest)
     end
 
+    -- Bus Ticket item: a free fare, consumed on use, honored only when the
+    -- destination accepts it (dest.accepttickets ~= false). Checked against
+    -- the resolved destination, so this also applies to random trips.
+    local usedTicket = false
+    if price > 0 and BusStop.ticketAppliesTo(player, dest) then
+        local sv3        = SandboxVars.BusStop or {}
+        local ticketType = sv3.TicketItem or "BusStop.BusTicket"
+        if removeItemType(player:getInventory(), ticketType) then
+            usedTicket = true
+            price      = 0
+        end
+    end
+
     local ok, errKey, errArgs = canAfford(player, price)
     if not ok then
         reply(player, "TravelResult", false, errKey, errArgs); return
@@ -422,7 +440,8 @@ local function handleRequestTravel(player, args)
     end
 
     print("[BusStop] " .. user .. " traveled to '" .. dest.displayname .. "'"
-        .. (isRandom and " (random)" or ""))
+        .. (isRandom and " (random)" or "")
+        .. (usedTicket and " (used Bus Ticket)" or ""))
     serverSend(player, "TeleportTo", { x = dest.x, y = dest.y, z = dest.z })
 
     -- Arrival protection: applied server-side so zombie AI (which runs on the server)
@@ -430,7 +449,11 @@ local function handleRequestTravel(player, args)
     pcall(function() player:setZombiesDontAttack(true) end)
     table.insert(_pendingProtections, { player = player, expiry = getTimestampMs() + 5000 })
 
-    reply(player, "TravelResult", true, "msg_arrived", { dest.displayname })
+    if usedTicket then
+        reply(player, "TravelResult", true, "msg_arrived_ticket", { dest.displayname })
+    else
+        reply(player, "TravelResult", true, "msg_arrived", { dest.displayname })
+    end
 end
 
 -- Spawns the physical bus-stop IsoThumpable at the stop's registry coordinate.
@@ -493,6 +516,7 @@ local function handleCreateStop(player, args)
         id = string.format("stop_%d_%d_%d_%d", x, y, z, getTimestampMs() % 1000000),
         displayname = name, x = x, y = y, z = z,
         pricetype = "dynamic", price_multiplier = 1.0, available = true, rememberreturn = false,
+        accepttickets = true,
     }
 
     if not spawnStopObject(newStop) then
@@ -582,6 +606,7 @@ local function handleUpdateStop(player, args)
     if args.price_multiplier then entry.price_multiplier = tonumber(args.price_multiplier) or 1.0 end
     if args.available     ~= nil then entry.available     = (args.available     == true or args.available     == "true") end
     if args.rememberreturn ~= nil then entry.rememberreturn = (args.rememberreturn == true or args.rememberreturn == "true") end
+    if args.accepttickets  ~= nil then entry.accepttickets  = (args.accepttickets  == true or args.accepttickets  == "true") end
 
     stops[idx] = entry
     saveStops(); broadcastStopList()

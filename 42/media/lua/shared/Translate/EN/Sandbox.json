@@ -17,5 +17,17 @@
     "Sandbox_BusStop_RandomTripPrice":               "Random Trip Price",
     "Sandbox_BusStop_RandomTripPrice_tooltip":       "Flat fare charged when a player uses the Random Trip button. Set to 0 for free random trips.",
     "Sandbox_BusStop_ReturnTripHours":               "Return Trip Duration (hours)",
-    "Sandbox_BusStop_ReturnTripHours_tooltip":       "How many in-game hours a return ticket remains valid after traveling to a destination. These are in-game hours, not real time — they advance based on the server's time speed multiplier. Default is 24 in-game hours."
+    "Sandbox_BusStop_ReturnTripHours_tooltip":       "How many in-game hours a return ticket remains valid after traveling to a destination. These are in-game hours, not real time — they advance based on the server's time speed multiplier. Default is 24 in-game hours.",
+    "Sandbox_BusStop_EnableTicketItem":              "Enable Bus Ticket Item",
+    "Sandbox_BusStop_EnableTicketItem_tooltip":      "When enabled, holding a Bus Ticket Item pays for a trip for free (consuming one) at any stop that accepts it. When disabled, the item has no effect even if a player holds one.",
+    "Sandbox_BusStop_TicketItem":                    "Ticket Item",
+    "Sandbox_BusStop_TicketItem_tooltip":            "Item type that acts as a free bus fare (e.g. BusStop.BusTicket). Only used when Enable Bus Ticket Item is on.",
+    "Sandbox_BusStop_SpawnTicketInBuildings":          "Spawn Ticket in Buildings",
+    "Sandbox_BusStop_SpawnTicketInBuildings_tooltip":  "When enabled, the Ticket Item is added to building loot distributions (schools, offices, houses) so it can be found while exploring.",
+    "Sandbox_BusStop_TicketBuildingSpawnRate":         "Ticket Building Spawn Rate",
+    "Sandbox_BusStop_TicketBuildingSpawnRate_tooltip": "Relative chance weight used when adding the Ticket Item to building loot containers. Higher = more common. Only used when Spawn Ticket in Buildings is on.",
+    "Sandbox_BusStop_SpawnTicketOnZombies":            "Spawn Ticket on Zombies",
+    "Sandbox_BusStop_SpawnTicketOnZombies_tooltip":    "When enabled, the Ticket Item is added to zombie corpse loot (any zombie, plus a few commuter-type outfits) so it can be found by looting zombies.",
+    "Sandbox_BusStop_TicketZombieSpawnRate":           "Ticket Zombie Spawn Rate",
+    "Sandbox_BusStop_TicketZombieSpawnRate_tooltip":   "Relative chance weight used when adding the Ticket Item to zombie corpse loot. Higher = more common. Only used when Spawn Ticket on Zombies is on."
 }
