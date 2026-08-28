@@ -2,7 +2,7 @@ module BusStop
 {
     item BusTicket
     {
-        Type = Normal,
+        ItemType = base:normal,
         DisplayName = Bus Ticket,
         Icon = ParkingTicket,
         Weight = 0.1,
