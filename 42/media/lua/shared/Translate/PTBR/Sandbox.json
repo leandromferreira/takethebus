@@ -29,5 +29,7 @@
     "Sandbox_BusStop_SpawnTicketOnZombies":            "Item Aparece em Zumbis",
     "Sandbox_BusStop_SpawnTicketOnZombies_tooltip":    "Quando ativo, o Item Passagem é adicionado ao loot de zumbis (qualquer zumbi, além de algumas roupas de trabalhadores/estudantes), podendo ser encontrado ao saquear zumbis.",
     "Sandbox_BusStop_TicketZombieSpawnRate":           "Chance de Aparecer em Zumbis",
-    "Sandbox_BusStop_TicketZombieSpawnRate_tooltip":   "Peso de chance relativo usado ao adicionar o Item Passagem no loot de zumbis. Maior = mais comum. Usado apenas quando Item Aparece em Zumbis está ativo."
+    "Sandbox_BusStop_TicketZombieSpawnRate_tooltip":   "Peso de chance relativo usado ao adicionar o Item Passagem no loot de zumbis. Maior = mais comum. Usado apenas quando Item Aparece em Zumbis está ativo.",
+    "Sandbox_BusStop_ShowDisabledStopsAsTransparent":  "Mostrar Paradas Desativadas Transparentes",
+    "Sandbox_BusStop_ShowDisabledStopsAsTransparent_tooltip":"Quando desativado (padrão), o marcador de uma parada desativada aparece com cor cheia no mapa/minimapa, igual a uma parada ativa. Quando ativado, paradas desativadas aparecem esmaecidas/transparentes."
 }

@@ -251,14 +251,25 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects, 
             end)
             if not ok then print("[BusStop] ERROR EnsureStopTile: " .. tostring(err)) end
         end
-        context:addOption(
-            BusStop.getText("ctx_use_stop", nearStop.displayname or ""),
-            { stop = nearStop, player = player },
-            function(data)
-                require "BusStopUI"
-                BusStopUI.open(data.player, data.stop)
-            end
-        )
+        if nearStop.arrivalonly == true then
+            -- Arrival-only stop: can be traveled TO but never used to depart
+            -- FROM. Shown disabled instead of omitted, so it's clear the stop
+            -- exists and works — it just can't be used to pick a destination.
+            local opt = context:addOption(
+                BusStop.getText("ctx_use_stop_arrival_only", nearStop.displayname or ""),
+                nil, nil
+            )
+            opt.notAvailable = true
+        else
+            context:addOption(
+                BusStop.getText("ctx_use_stop", nearStop.displayname or ""),
+                { stop = nearStop, player = player },
+                function(data)
+                    require "BusStopUI"
+                    BusStopUI.open(data.player, data.stop)
+                end
+            )
+        end
     end
 
     if isAdmin then

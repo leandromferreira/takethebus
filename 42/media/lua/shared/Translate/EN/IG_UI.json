@@ -1,5 +1,6 @@
 {
     "IGUI_BusStop_ctx_use_stop":        "Use bus stop: %1",
+    "IGUI_BusStop_ctx_use_stop_arrival_only":"Bus stop: %1 (arrival only)",
     "IGUI_BusStop_ctx_build_stop":      "Build bus stop here",
     "IGUI_BusStop_ctx_remove_stop":     "Remove bus stop",
     "IGUI_BusStop_ctx_manage_stops":    "Manage bus stops",
@@ -9,6 +10,7 @@
     "IGUI_BusStop_ui_close":            "Close",
     "IGUI_BusStop_ui_free_label":       "Free",
     "IGUI_BusStop_ui_free_ticket_label":"Free (Ticket)",
+    "IGUI_BusStop_ui_arrival_only_tag": "(One-Way)",
     "IGUI_BusStop_ui_return_to":        "Return to %1",
     "IGUI_BusStop_ui_return_expires":   "Return to %1 (%2)",
     "IGUI_BusStop_ui_random_trip":      "Random Trip",
@@ -28,6 +30,7 @@
     "IGUI_BusStop_adm_available":       "Available:",
     "IGUI_BusStop_adm_remember_return": "Return Trip:",
     "IGUI_BusStop_adm_accept_tickets":  "Accept Bus Ticket:",
+    "IGUI_BusStop_adm_arrival_only":    "Arrival Only:",
     "IGUI_BusStop_adm_price_free":      "Free",
     "IGUI_BusStop_adm_price_fixed":     "Fixed",
     "IGUI_BusStop_adm_price_dynamic":   "Dynamic",
@@ -36,6 +39,8 @@
     "IGUI_BusStop_adm_save":            "Save Changes",
     "IGUI_BusStop_adm_delete":          "Delete Stop",
     "IGUI_BusStop_adm_goto":            "Go To",
+    "IGUI_BusStop_adm_clear_all":       "Clear All",
+    "IGUI_BusStop_adm_clear_all_confirm":"Remove ALL bus stops? This cannot be undone.",
     "IGUI_BusStop_adm_close":           "Close",
 
     "IGUI_BusStop_tip_name":            "Name shown to players in the\ntravel UI and on the map.",
@@ -50,9 +55,12 @@
     "IGUI_BusStop_tip_rr_no":           "No return trip is granted\nfor this stop.",
     "IGUI_BusStop_tip_ticket_yes":      "Players holding a Bus Ticket item\ntravel here for free (item is consumed).",
     "IGUI_BusStop_tip_ticket_no":       "Bus Ticket items have no effect\nat this stop; normal fare applies.",
+    "IGUI_BusStop_tip_arrival_yes":     "Arrival-only stop. Players can travel\nHERE but can't depart from it (one-way).",
+    "IGUI_BusStop_tip_arrival_no":      "Normal stop — players can pick a\ndestination and travel from here.",
     "IGUI_BusStop_tip_save":            "Save all field changes to the server.",
     "IGUI_BusStop_tip_delete":          "Permanently remove this stop\nfrom the world.",
     "IGUI_BusStop_tip_goto":            "Teleport yourself to\nthis stop's location.",
+    "IGUI_BusStop_tip_clear_all":       "Remove every bus stop at once.\nAsks for confirmation first.",
 
     "IGUI_BusStop_dlg_name_prompt":     "Enter a name for this bus stop:",
     "IGUI_BusStop_dlg_name_default":    "Bus Stop",
@@ -62,6 +70,7 @@
     "IGUI_BusStop_msg_stop_created":    "Bus stop '%1' created.",
     "IGUI_BusStop_msg_stop_removed":    "Bus stop removed.",
     "IGUI_BusStop_msg_stop_updated":    "Stop updated.",
+    "IGUI_BusStop_msg_all_stops_cleared":"All bus stops removed (%1).",
 
     "IGUI_BusStop_err_in_vehicle":      "Exit the vehicle before using a bus stop.",
     "IGUI_BusStop_err_zombies_nearby":  "There are zombies nearby! Deal with them first.",
@@ -76,6 +85,7 @@
     "IGUI_BusStop_err_permission":      "Permission denied.",
     "IGUI_BusStop_err_invalid_tile":    "Invalid tile.",
     "IGUI_BusStop_err_not_in_registry": "Stop not found in registry.",
+    "IGUI_BusStop_err_arrival_only":    "This stop is arrival-only — you can't travel from here.",
 
     "IGUI_BusStop_map_stop_label":      "%1",
 

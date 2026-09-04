@@ -53,6 +53,7 @@ local function saveStops()
             tostring(s.available ~= false),
             tostring(s.rememberreturn == true),
             tostring(s.accepttickets ~= false),
+            tostring(s.arrivalonly == true),
         }, SEP)
         local ok, err = pcall(function() writer:write(line .. "\n") end)
         if not ok then
@@ -83,8 +84,10 @@ local function parseTSVLine(line)
         available        = parts[8] == "true",
         rememberreturn   = parts[9] == "true",
         -- Field 10 (accepttickets) was added after the initial release; older
-        -- save lines only have 9 fields, so default to true (accept) when absent.
+        -- save lines have fewer fields, so default to true (accept) when absent.
         accepttickets    = parts[10] == nil or parts[10] == "true",
+        -- Field 11 (arrivalonly): absent defaults to false (normal stop).
+        arrivalonly      = parts[11] == "true",
     }
 end
 
@@ -103,7 +106,53 @@ local function parseLuaLine(line)
         available        = line:match('available=(%a+)') == "true",
         rememberreturn   = line:match('rememberreturn=(%a+)') == "true",
         accepttickets    = line:match('accepttickets=(%a+)') ~= "false",
+        arrivalonly      = line:match('arrivalonly=(%a+)') == "true",
     }
+end
+
+-- Seeded only the very first time the mod ever runs on a server (no save
+-- file at all yet, not even the legacy one). Every entry gets dynamic
+-- pricing and all other field defaults — admins can re-tune, disable, or
+-- delete any of them afterward via the admin panel like any other stop.
+-- Coordinates are town-center reference points; z defaults to 0 (ground
+-- floor) since none were specified. Physical tiles are NOT spawned eagerly
+-- here (most of these chunks won't be loaded at server start) — they
+-- materialize lazily the first time a player interacts with the stop, same
+-- as any registry entry whose tile is missing (see handleEnsureStopTile).
+local DEFAULT_STOPS = {
+    { name = "Irvington",          x = 2404,  y = 13852 },
+    { name = "Ekron",              x = 701,   y = 9899  },
+    { name = "Echo Creek",         x = 3568,  y = 10920 },
+    { name = "Brandenburg",        x = 1893,  y = 6461  },
+    { name = "Riverside",          x = 6586,  y = 5277  },
+    { name = "Fallas Lake",        x = 7272,  y = 8305  },
+    { name = "Rosewood",           x = 8027,  y = 11194 },
+    { name = "March Ridge",        x = 10352, y = 12330 },
+    { name = "Muldraugh",          x = 10599, y = 10570 },
+    { name = "West Point",         x = 12100, y = 7102  },
+    { name = "Valley Station",     x = 13592, y = 5715  },
+    { name = "Louisville Spiffos", x = 12697, y = 1649  },
+    { name = "Louisville Audubon", x = 13975, y = 3266  },
+    { name = "Louisville Airport", x = 15558, y = 2955  },
+}
+
+local function seedDefaultStops()
+    stops = {}
+    for _, d in ipairs(DEFAULT_STOPS) do
+        table.insert(stops, {
+            id               = "preset_" .. d.name:lower():gsub("%s+", "_"),
+            displayname      = d.name,
+            x                = d.x, y = d.y, z = 0,
+            pricetype        = "dynamic",
+            price_multiplier = 1.0,
+            available        = true,
+            rememberreturn   = false,
+            accepttickets    = true,
+            arrivalonly      = false,
+        })
+    end
+    print("[BusStop] No save file found — seeding " .. #stops .. " default stop(s)")
+    saveStops()
 end
 
 local function loadStops()
@@ -117,8 +166,7 @@ local function loadStops()
         usedOldFile = reader ~= nil
     end
     if not reader then
-        stops = {}
-        print("[BusStop] No save file found — starting with empty stop list")
+        seedDefaultStops()
         return
     end
     stops = {}
@@ -361,6 +409,13 @@ local function handleRequestTravel(player, args)
         reply(player, "TravelResult", false, "err_too_far"); return
     end
 
+    -- Arrival-only stop: can be traveled TO (as a destination) but never used
+    -- to depart FROM — one-way routes. Blocks every travel type from here,
+    -- including Return and Random, since the player is physically at this stop.
+    if currStop.arrivalonly == true then
+        reply(player, "TravelResult", false, "err_arrival_only"); return
+    end
+
     local isRandom = args.isRandom == true or args.isRandom == "true"
     local isReturn = args.isReturn == true or args.isReturn == "true"
 
@@ -516,7 +571,7 @@ local function handleCreateStop(player, args)
         id = string.format("stop_%d_%d_%d_%d", x, y, z, getTimestampMs() % 1000000),
         displayname = name, x = x, y = y, z = z,
         pricetype = "dynamic", price_multiplier = 1.0, available = true, rememberreturn = false,
-        accepttickets = true,
+        accepttickets = true, arrivalonly = false,
     }
 
     if not spawnStopObject(newStop) then
@@ -550,6 +605,24 @@ local function handleEnsureStopTile(player, args)
     spawnStopObject(stop)
 end
 
+-- Removes the physical bus-stop tile for `stop`, if one is loaded/spawned.
+-- Shared by handleRemoveStop (single stop) and handleClearAllStops (bulk).
+local function removeStopTile(stop)
+    local cellOk, cell = pcall(getCell)
+    local sq = (cellOk and cell) and cell:getGridSquare(stop.x, stop.y, stop.z) or nil
+    if not sq then return end
+    local objs = sq:getObjects()
+    for i = objs:size() - 1, 0, -1 do
+        local obj   = objs:get(i)
+        local objMd = obj:getModData()
+        if objMd.busStop and objMd.stopId == stop.id then
+            local _, rmErr = pcall(function() sq:transmitRemoveItemFromSquare(obj) end)
+            if rmErr then print("[BusStop] ERROR removeStopTile transmitRemove: " .. tostring(rmErr)) end
+            break
+        end
+    end
+end
+
 local function handleRemoveStop(player, args)
     local user = tostring(player:getUsername())
     if not playerIsAdmin(player) then
@@ -558,22 +631,7 @@ local function handleRemoveStop(player, args)
 
     local stopId = args.stopId
     local stop   = findStop(stopId)
-    if stop then
-        local cellOk, cell = pcall(getCell)
-        local sq = (cellOk and cell) and cell:getGridSquare(stop.x, stop.y, stop.z) or nil
-        if sq then
-            local objs = sq:getObjects()
-            for i = objs:size() - 1, 0, -1 do
-                local obj   = objs:get(i)
-                local objMd = obj:getModData()
-                if objMd.busStop and objMd.stopId == stopId then
-                    local _, rmErr = pcall(function() sq:transmitRemoveItemFromSquare(obj) end)
-                    if rmErr then print("[BusStop] ERROR RemoveStop transmitRemove: " .. tostring(rmErr)) end
-                    break
-                end
-            end
-        end
-    end
+    if stop then removeStopTile(stop) end
 
     local _, idx = findStop(stopId)
     if idx then
@@ -586,6 +644,22 @@ local function handleRemoveStop(player, args)
         print("[BusStop] ERROR RemoveStop: id=" .. tostring(stopId) .. " not in registry")
         reply(player, "RemoveResult", false, "err_not_in_registry")
     end
+end
+
+local function handleClearAllStops(player, _)
+    local user = tostring(player:getUsername())
+    if not playerIsAdmin(player) then
+        reply(player, "ClearAllResult", false, "err_permission"); return
+    end
+
+    local count = #stops
+    for _, stop in ipairs(stops) do
+        removeStopTile(stop)
+    end
+    stops = {}
+    saveStops(); broadcastStopList()
+    print("[BusStop] " .. user .. " cleared all stops (" .. count .. " removed)")
+    reply(player, "ClearAllResult", true, "msg_all_stops_cleared", { tostring(count) })
 end
 
 local function handleUpdateStop(player, args)
@@ -607,6 +681,7 @@ local function handleUpdateStop(player, args)
     if args.available     ~= nil then entry.available     = (args.available     == true or args.available     == "true") end
     if args.rememberreturn ~= nil then entry.rememberreturn = (args.rememberreturn == true or args.rememberreturn == "true") end
     if args.accepttickets  ~= nil then entry.accepttickets  = (args.accepttickets  == true or args.accepttickets  == "true") end
+    if args.arrivalonly    ~= nil then entry.arrivalonly    = (args.arrivalonly    == true or args.arrivalonly    == "true") end
 
     stops[idx] = entry
     saveStops(); broadcastStopList()
@@ -647,6 +722,7 @@ local HANDLERS = {
     UpdateStop      = handleUpdateStop,
     RequestStopList = handleRequestStopList,
     EnsureStopTile  = handleEnsureStopTile,
+    ClearAllStops   = handleClearAllStops,
 }
 
 Events.OnTick.Add(function()

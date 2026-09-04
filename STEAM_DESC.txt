@@ -2,29 +2,32 @@
 
 Adds admin-placed bus stops to any server. Players walk up, pick a destination, pay the fare, and get teleported with a fade transition. Fully server-authoritative.
 
+[b]Your bus network survives everything.[/b] Stops are saved to their own server file, completely separate from the save itself — starting a brand new world, wiping a region, or updating the mod never wipes your routes. Set them up once, keep them forever.
+
 [hr][/hr]
 
 [h2]How It Works[/h2]
 
 [b]Players:[/b] walk up to a stop, right-click and choose [b]Use bus stop[/b], pick a destination in the travel panel, then confirm to travel. Screen fades out, you're teleported, fades back in. Destinations with [b]Return Trip[/b] get a free one-click return on your next visit; [b]Random Trip[/b] sends you somewhere random if enabled. Holding a [b]Bus Ticket[/b] item pays for the trip for free (consumed on use) at any stop that accepts it.
 
-[b]Admins:[/b] right-click any tile to [b]Build bus stop here[/b], right-click a stop to [b]Remove[/b] it, or right-click anywhere to open [b]Manage bus stops[/b] for the full admin panel.
+[b]Admins:[/b] right-click any tile to [b]Build bus stop here[/b], right-click a stop to [b]Remove[/b] it, or right-click anywhere to open [b]Manage bus stops[/b] for the full admin panel — edit any field, wipe every stop at once with [b]Clear All[/b], or mark a stop [b]Arrival Only[/b] to make it a one-way destination.
 
 [hr][/hr]
 
 [h2]Features[/h2]
 
 [list]
+[*][b]Persistent across saves[/b] — stops live in their own server file, not the save; new worlds, soft-wipes, and mod updates never lose your routes, and a missing tile rebuilds itself automatically the moment a player uses it
 [*][b]Travel panel[/b] — searchable, scrollable destination list; select then confirm, no accidental trips
+[*][b]One-way stops[/b] — mark a stop [b]Arrival Only[/b] so it can be reached but never departed from; shown in red on the map so it's easy to spot
 [*][b]Random Trip[/b] — configurable price, optional toggle
 [*][b]Fade transition[/b] — full-screen fade with bus sound effects, adjustable volume
 [*][b]Arrival protection[/b] — brief zombie immunity with a countdown HUD after teleporting
 [*][b]Pricing[/b] — Free, Fixed, or Dynamic (distance-based) fares, with a per-stop multiplier
 [*][b]Economy[/b] — pay with an inventory item, a bank mod (simple 3-function API), or both; includes a Survivor Shop bridge example
 [*][b]Bus Ticket item[/b] — findable in schools, offices, houses, and on zombies; pays for one trip free; each stop can accept or reject it; fully configurable via sandbox
-[*][b]Admin panel[/b] — edit any stop's fields inline, teleport to it, or delete it
-[*][b]Map markers[/b] — every active stop shown as an icon on the map
-[*][b]Wipe-proof[/b] — stops survive new worlds and soft-wipes; the stop registry is the source of truth, tiles rebuild automatically on first use
+[*][b]Admin panel[/b] — edit any stop's fields inline, teleport to it, delete it, or wipe every stop at once with [b]Clear All[/b] (confirmation required)
+[*][b]Map markers[/b] — every active stop shown as an icon on the map, color-coded by status
 [/list]
 
 [hr][/hr]
@@ -39,6 +42,7 @@ Adds admin-placed bus stops to any server. Players walk up, pick a destination, 
 [tr][td]Available[/td][td]Yes/No — hidden from players when off[/td][/tr]
 [tr][td]Return Trip[/td][td]Yes/No — free one-click return after arrival[/td][/tr]
 [tr][td]Accept Bus Ticket[/td][td]Yes/No — whether a ticket item works here[/td][/tr]
+[tr][td]Arrival Only[/td][td]Yes/No — can be traveled to, but never departed from (one-way)[/td][/tr]
 [/table]
 
 [hr][/hr]
@@ -64,6 +68,7 @@ Under [b]Sandbox: Bus Stop Fast Travel[/b]
 [tr][td]Ticket Building Spawn Rate[/td][td]2[/td][td]Chance weight in building loot[/td][/tr]
 [tr][td]Spawn Ticket on Zombies[/td][td]Yes[/td][td]Add it to zombie corpse loot[/td][/tr]
 [tr][td]Ticket Zombie Spawn Rate[/td][td]1[/td][td]Chance weight in zombie loot[/td][/tr]
+[tr][td]Show Disabled Stops as Transparent[/td][td]No[/td][td]When on, a disabled stop's map marker fades instead of showing full color[/td][/tr]
 [/table]
 
 [i]Dynamic price = ceil( (BasePrice + distance x PricePerTile / 1000) x stop multiplier )[/i]

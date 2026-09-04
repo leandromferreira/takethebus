@@ -14,6 +14,28 @@ local function getTex()
     return markerTex
 end
 
+-- Returns alpha, r, g, b for `stop`'s marker (always drawn — nothing is
+-- hidden from the map).
+-- Gold  = normal, usable stop. Also the default look for a disabled stop —
+--         same full color as active, unless ShowDisabledStopsAsTransparent
+--         is on, which restores the old faded/muted look.
+-- Red   = arrival-only — still a valid destination, just can't be used to
+--         depart from. Only checked for stops that are still available;
+--         a disabled stop is never shown red.
+local function markerColor(stop)
+    if not stop.available then
+        local sv = SandboxVars.BusStop or {}
+        if sv.ShowDisabledStopsAsTransparent == true then
+            return 0.4, 0.6, 0.6, 0.6
+        end
+        return 1.0, 1.0, 0.85, 0.2
+    end
+    if stop.arrivalonly == true then
+        return 1.0, 0.9, 0.15, 0.15
+    end
+    return 1.0, 1.0, 0.85, 0.2
+end
+
 -- ── World map ─────────────────────────────────────────────────────────────────
 
 local origWorldMapRender = ISWorldMap.render
@@ -25,13 +47,12 @@ function ISWorldMap:render()
 
     local half = ICON_SIZE_WORLD / 2
     for _, stop in ipairs(BusStop.activeStops) do
-        local sx = self.mapAPI:worldToUIX(stop.x, stop.y)
-        local sy = self.mapAPI:worldToUIY(stop.x, stop.y)
-        local alpha = stop.available and 1.0 or 0.4
-        local r, g, b = stop.available and 1.0 or 0.6,
-                        stop.available and 0.85 or 0.6,
-                        stop.available and 0.2 or 0.6
-        self:drawTextureScaledAspect(tex, sx - half, sy - half, ICON_SIZE_WORLD, ICON_SIZE_WORLD, alpha, r, g, b)
+        local alpha, r, g, b = markerColor(stop)
+        if alpha then
+            local sx = self.mapAPI:worldToUIX(stop.x, stop.y)
+            local sy = self.mapAPI:worldToUIY(stop.x, stop.y)
+            self:drawTextureScaledAspect(tex, sx - half, sy - half, ICON_SIZE_WORLD, ICON_SIZE_WORLD, alpha, r, g, b)
+        end
     end
 end
 
@@ -47,14 +68,13 @@ function ISMiniMapInner:render()
 
     local half = ICON_SIZE_MINI / 2
     for _, stop in ipairs(BusStop.activeStops) do
-        local sx = self.mapAPI:worldToUIX(stop.x, stop.y)
-        local sy = self.mapAPI:worldToUIY(stop.x, stop.y)
-        if sx >= 0 and sx <= self.width and sy >= 0 and sy <= self.height then
-            local alpha = stop.available and 1.0 or 0.4
-            local r, g, b = stop.available and 1.0 or 0.6,
-                            stop.available and 0.85 or 0.6,
-                            stop.available and 0.2 or 0.6
-            self:drawTextureScaledAspect(tex, sx - half, sy - half, ICON_SIZE_MINI, ICON_SIZE_MINI, alpha, r, g, b)
+        local alpha, r, g, b = markerColor(stop)
+        if alpha then
+            local sx = self.mapAPI:worldToUIX(stop.x, stop.y)
+            local sy = self.mapAPI:worldToUIY(stop.x, stop.y)
+            if sx >= 0 and sx <= self.width and sy >= 0 and sy <= self.height then
+                self:drawTextureScaledAspect(tex, sx - half, sy - half, ICON_SIZE_MINI, ICON_SIZE_MINI, alpha, r, g, b)
+            end
         end
     end
 end

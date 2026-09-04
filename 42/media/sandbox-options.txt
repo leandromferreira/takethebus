@@ -146,3 +146,12 @@ option BusStop.TicketZombieSpawnRate
     translation = BusStop_TicketZombieSpawnRate,
     tooltip = BusStop_TicketZombieSpawnRate_tooltip,
 }
+
+option BusStop.ShowDisabledStopsAsTransparent
+{
+    type = boolean,
+    default = false,
+    page = BusStop,
+    translation = BusStop_ShowDisabledStopsAsTransparent,
+    tooltip = BusStop_ShowDisabledStopsAsTransparent_tooltip,
+}

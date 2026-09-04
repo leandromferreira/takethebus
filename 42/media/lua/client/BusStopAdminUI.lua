@@ -29,7 +29,9 @@ local TIP_KEYS = {
     availYes = "tip_avail_yes", availNo = "tip_avail_no",
     rrYes    = "tip_rr_yes",  rrNo     = "tip_rr_no",
     ticketYes = "tip_ticket_yes", ticketNo = "tip_ticket_no",
+    arrivalYes = "tip_arrival_yes", arrivalNo = "tip_arrival_no",
     save     = "tip_save",    delete   = "tip_delete",  goto_btn = "tip_goto",
+    clearAll = "tip_clear_all",
 }
 
 -- ── ISPanel subclass ──────────────────────────────────────────────────────────
@@ -41,8 +43,11 @@ function AdminPanel:new()
     local sh = getCore():getScreenHeight()
 
     -- 62% of screen width / 70% of screen height, clamped min/max.
+    -- Min height must fit 8 form rows (displayname, coords, mult, price type,
+    -- available, return trip, accept ticket, arrival only) + header + footer
+    -- without overlapping — see buildLayout().
     local W = math.max(px(560), math.min(px(800), math.floor(sw * 0.62)))
-    local H = math.max(px(380), math.min(px(540), math.floor(sh * 0.70)))
+    local H = math.max(px(420), math.min(px(540), math.floor(sh * 0.70)))
 
     local o = ISPanel.new(self,
         math.floor((sw - W) / 2),
@@ -194,26 +199,41 @@ function AdminPanel:buildLayout()
     addTip(FIELD_X + halfW + GAP, y, FIELD_W - halfW - GAP,    ROW_H, "ticketNo")
     y = y + ROW_H + PADDING
 
-    -- ── Footer — 3 buttons distributed across the form area ──
+    -- Arrival Only — 2 equal buttons. "Yes" makes this an arrival-only stop:
+    -- it can be traveled TO but never used to depart FROM (one-way routes).
+    addLabel(BusStop.getText("adm_arrival_only"), y)
+    self.btnArrivalYes = self:makeArrivalBtn(BusStop.getText("adm_yes"), true,  FIELD_X,               y, halfW)
+    self.btnArrivalNo  = self:makeArrivalBtn(BusStop.getText("adm_no"),  false, FIELD_X + halfW + GAP, y, FIELD_W - halfW - GAP)
+    addTip(FIELD_X,               y, halfW,                    ROW_H, "arrivalYes")
+    addTip(FIELD_X + halfW + GAP, y, FIELD_W - halfW - GAP,    ROW_H, "arrivalNo")
+    y = y + ROW_H + PADDING
+
+    -- ── Footer — 4 buttons distributed across the form area ──
     local footerY  = H - FOOTER_H + PADDING
     local formW    = W - FORM_X - PADDING
     local btnGap   = GAP
-    local bW3      = math.floor((formW - btnGap * 2) / 3)
+    local bW4      = math.floor((formW - btnGap * 3) / 4)
+    local bRem4    = formW - btnGap * 3 - bW4 * 4   -- rounding remainder → last button
 
-    self.btnSave = ISButton:new(FORM_X, footerY, bW3, ROW_H,
+    self.btnSave = ISButton:new(FORM_X, footerY, bW4, ROW_H,
         BusStop.getText("adm_save"), self, self.onSave)
     self.btnSave:initialise(); self.btnSave:instantiate(); self:addChild(self.btnSave)
-    addTip(FORM_X, footerY, bW3, ROW_H, "save")
+    addTip(FORM_X, footerY, bW4, ROW_H, "save")
 
-    self.btnDelete = ISButton:new(FORM_X + bW3 + btnGap, footerY, bW3, ROW_H,
+    self.btnDelete = ISButton:new(FORM_X + bW4 + btnGap, footerY, bW4, ROW_H,
         BusStop.getText("adm_delete"), self, self.onDelete)
     self.btnDelete:initialise(); self.btnDelete:instantiate(); self:addChild(self.btnDelete)
-    addTip(FORM_X + bW3 + btnGap, footerY, bW3, ROW_H, "delete")
+    addTip(FORM_X + bW4 + btnGap, footerY, bW4, ROW_H, "delete")
 
-    self.btnGoto = ISButton:new(FORM_X + (bW3 + btnGap) * 2, footerY, formW - (bW3 + btnGap) * 2, ROW_H,
+    self.btnGoto = ISButton:new(FORM_X + (bW4 + btnGap) * 2, footerY, bW4, ROW_H,
         BusStop.getText("adm_goto"), self, self.onGoto)
     self.btnGoto:initialise(); self.btnGoto:instantiate(); self:addChild(self.btnGoto)
-    addTip(FORM_X + (bW3 + btnGap) * 2, footerY, formW - (bW3 + btnGap) * 2, ROW_H, "goto_btn")
+    addTip(FORM_X + (bW4 + btnGap) * 2, footerY, bW4, ROW_H, "goto_btn")
+
+    self.btnClearAll = ISButton:new(FORM_X + (bW4 + btnGap) * 3, footerY, bW4 + bRem4, ROW_H,
+        BusStop.getText("adm_clear_all"), self, self.onClearAll)
+    self.btnClearAll:initialise(); self.btnClearAll:instantiate(); self:addChild(self.btnClearAll)
+    addTip(FORM_X + (bW4 + btnGap) * 3, footerY, bW4 + bRem4, ROW_H, "clearAll")
 
     -- X close button — top-right corner.
     local CLOSE_SZ = px(24)
@@ -297,6 +317,13 @@ function AdminPanel:makeTicketBtn(label, val, x, y, w)
     return btn
 end
 
+function AdminPanel:makeArrivalBtn(label, val, x, y, w)
+    local ROW_H = px(28)
+    local btn = ISButton:new(x, y, w, ROW_H, label, self, function() self:onArrivalOnly(val) end)
+    btn:initialise(); btn:instantiate(); self:addChild(btn)
+    return btn
+end
+
 -- ── Highlight helpers ─────────────────────────────────────────────────────────
 
 local function hi(btn, active)
@@ -330,19 +357,29 @@ function AdminPanel:setAcceptTickets(val)
     hi(self.btnTicketNo,  val == false)
 end
 
+function AdminPanel:setArrivalOnly(val)
+    self.arrivalOnlyVal = val
+    hi(self.btnArrivalYes, val == true)
+    hi(self.btnArrivalNo,  val == false)
+end
+
 function AdminPanel:onPriceType(pt)    self:setPriceType(pt) end
 function AdminPanel:onAvailable(val)   self:setAvailable(val) end
 function AdminPanel:onRememberReturn(v) self:setRememberReturn(v) end
 function AdminPanel:onAcceptTickets(v)  self:setAcceptTickets(v) end
+function AdminPanel:onArrivalOnly(v)    self:setArrivalOnly(v) end
 
 function AdminPanel:setFormEnabled(enabled)
     self.fieldName:setEditable(enabled)
     self.fieldMult:setEditable(enabled)
+    -- btnClearAll is intentionally excluded: it acts on the whole registry,
+    -- not the selected stop, so it stays enabled regardless of selection.
     for _, b in ipairs({ self.btnSave, self.btnDelete, self.btnGoto,
                          self.btnFree, self.btnFixed, self.btnDynamic,
                          self.btnAvailYes, self.btnAvailNo,
                          self.btnRRYes, self.btnRRNo,
-                         self.btnTicketYes, self.btnTicketNo }) do
+                         self.btnTicketYes, self.btnTicketNo,
+                         self.btnArrivalYes, self.btnArrivalNo }) do
         b:setEnable(enabled)
     end
 end
@@ -371,6 +408,7 @@ function AdminPanel:onSelectStop(s)
     self:setAvailable(s.available ~= false)
     self:setRememberReturn(s.rememberreturn == true)
     self:setAcceptTickets(s.accepttickets ~= false)
+    self:setArrivalOnly(s.arrivalonly == true)
 end
 
 function AdminPanel:onSave()
@@ -386,6 +424,7 @@ function AdminPanel:onSave()
         available        = (self.availableVal ~= false),
         rememberreturn   = (self.rememberReturnVal == true),
         accepttickets    = (self.acceptTicketsVal ~= false),
+        arrivalonly      = (self.arrivalOnlyVal == true),
     })
 end
 
@@ -400,6 +439,25 @@ function AdminPanel:onDelete()
             break
         end
     end
+    self.selected   = nil
+    self.selectedId = nil
+    self:setFormEnabled(false)
+    self:refreshList()
+end
+
+-- Confirmation dialog before wiping the whole registry — irreversible.
+function AdminPanel:onClearAll()
+    local modal = ISModalDialog:new(0, 0, 350, 150, BusStop.getText("adm_clear_all_confirm"), true, self, AdminPanel.onConfirmClearAll)
+    modal:initialise()
+    modal:addToUIManager()
+    modal.moveWithMouse = true
+end
+
+function AdminPanel:onConfirmClearAll(button)
+    if button.internal ~= "YES" then return end
+    sendClientCommand(MODULE, "ClearAllStops", {})
+    -- Optimistic clear: mirrors onDelete's pattern.
+    BusStop.activeStops = {}
     self.selected   = nil
     self.selectedId = nil
     self:setFormEnabled(false)

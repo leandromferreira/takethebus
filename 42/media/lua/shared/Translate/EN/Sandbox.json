@@ -29,5 +29,7 @@
     "Sandbox_BusStop_SpawnTicketOnZombies":            "Spawn Ticket on Zombies",
     "Sandbox_BusStop_SpawnTicketOnZombies_tooltip":    "When enabled, the Ticket Item is added to zombie corpse loot (any zombie, plus a few commuter-type outfits) so it can be found by looting zombies.",
     "Sandbox_BusStop_TicketZombieSpawnRate":           "Ticket Zombie Spawn Rate",
-    "Sandbox_BusStop_TicketZombieSpawnRate_tooltip":   "Relative chance weight used when adding the Ticket Item to zombie corpse loot. Higher = more common. Only used when Spawn Ticket on Zombies is on."
+    "Sandbox_BusStop_TicketZombieSpawnRate_tooltip":   "Relative chance weight used when adding the Ticket Item to zombie corpse loot. Higher = more common. Only used when Spawn Ticket on Zombies is on.",
+    "Sandbox_BusStop_ShowDisabledStopsAsTransparent":  "Show Disabled Stops as Transparent",
+    "Sandbox_BusStop_ShowDisabledStopsAsTransparent_tooltip":"When disabled (default), a disabled stop's map/minimap marker still shows in full color, same as an active stop. When enabled, disabled stops show faded/transparent instead."
 }

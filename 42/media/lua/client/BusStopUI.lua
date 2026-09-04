@@ -233,10 +233,18 @@ function TravelPanel:createChildren()
         local pStr = data.priceStr or ""
         local pW   = tm2:MeasureStringX(UIFont.Small, pStr)
         local nameMaxW = math.max(10, w - pW - px(20))
-        local nameStr  = trimText(UIFont.Small, data.name or "", nameMaxW)
+        local rawName  = data.name or ""
+        if data.arrivalOnly then
+            rawName = rawName .. " " .. BusStop.getText("ui_arrival_only_tag")
+        end
+        local nameStr  = trimText(UIFont.Small, rawName, nameMaxW)
 
         local nr, ng, nb = 1, 1, 1
-        if self.selected == item.index then nr, ng, nb = 1, 1, 0.5 end
+        if self.selected == item.index then
+            nr, ng, nb = 1, 1, 0.5
+        elseif data.arrivalOnly then
+            nr, ng, nb = 1, 0.6, 0.2
+        end
 
         self:drawText(nameStr, px(8), y + px(10), nr, ng, nb, 1, UIFont.Small)
         if pStr ~= "" then
@@ -250,13 +258,15 @@ function TravelPanel:createChildren()
         ISScrollingListBox.onMouseDown(self, x, y)
         local item = self.items and self.items[self.selected]
         if item and item.item and item.item.destId then
-            panel._selectedDestId = item.item.destId
-            panel._selectedName   = item.item.name
-            panel._selectedPrice  = item.item.priceStr
+            panel._selectedDestId      = item.item.destId
+            panel._selectedName        = item.item.name
+            panel._selectedPrice       = item.item.priceStr
+            panel._selectedArrivalOnly = item.item.arrivalOnly
         else
-            panel._selectedDestId = nil
-            panel._selectedName   = nil
-            panel._selectedPrice  = nil
+            panel._selectedDestId      = nil
+            panel._selectedName        = nil
+            panel._selectedPrice       = nil
+            panel._selectedArrivalOnly = nil
         end
         panel:_updateTravelBtn()
     end
@@ -322,7 +332,7 @@ function TravelPanel:_filterList(filter)
             local priceStr = BusStop.ticketAppliesTo(self.player, dest)
                 and BusStop.getText("ui_free_ticket_label")
                 or  BusStop.priceLabel(px_p, py_p, dest)
-            list:addItem(name, { name = name, destId = dest.id, priceStr = priceStr })
+            list:addItem(name, { name = name, destId = dest.id, priceStr = priceStr, arrivalOnly = dest.arrivalonly == true })
             if dest.id == self._selectedDestId then selStillVisible = true end
             count = count + 1
         end
@@ -332,9 +342,10 @@ function TravelPanel:_filterList(filter)
     end
     -- Clear selection if it's no longer visible in filtered results
     if not selStillVisible and self._selectedDestId then
-        self._selectedDestId = nil
-        self._selectedName   = nil
-        self._selectedPrice  = nil
+        self._selectedDestId      = nil
+        self._selectedName        = nil
+        self._selectedPrice       = nil
+        self._selectedArrivalOnly = nil
         self:_updateTravelBtn()
     end
 end
@@ -421,7 +432,12 @@ function TravelPanel:render()
         local info, r, g, b
         if self._selectedName then
             info = self._selectedName .. "  —  " .. (self._selectedPrice or "")
-            r, g, b = 1, 1, 0.5
+            if self._selectedArrivalOnly then
+                info = info .. "  " .. BusStop.getText("ui_arrival_only_tag")
+                r, g, b = 1, 0.6, 0.2
+            else
+                r, g, b = 1, 1, 0.5
+            end
         else
             info = BusStop.getText("ui_search_label")
             r, g, b = 0.5, 0.5, 0.5
