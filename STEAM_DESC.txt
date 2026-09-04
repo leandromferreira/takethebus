@@ -18,6 +18,7 @@ Adds admin-placed bus stops to any server. Players walk up, pick a destination, 
 
 [list]
 [*][b]Persistent across saves[/b] — stops live in their own server file, not the save; new worlds, soft-wipes, and mod updates never lose your routes, and a missing tile rebuilds itself automatically the moment a player uses it
+[*][b]Ready out of the box[/b] — a fresh server with no stops yet starts pre-seeded with 14 stops covering every major town (Muldraugh, Rosewood, Riverside, West Point, Louisville, and more) with dynamic pricing; edit, disable, or delete any of them from the admin panel, or wipe them with [b]Clear All[/b] if you'd rather build your own network from scratch
 [*][b]Travel panel[/b] — searchable, scrollable destination list; select then confirm, no accidental trips
 [*][b]One-way stops[/b] — mark a stop [b]Arrival Only[/b] so it can be reached but never departed from; shown in red on the map so it's easy to spot
 [*][b]Random Trip[/b] — configurable price, optional toggle
